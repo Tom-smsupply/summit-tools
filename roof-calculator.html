@@ -1477,12 +1477,18 @@ function getTransferTotals() {
 }
 
 function filterProducts(keywords, colour) {
-  const colourLower = colour.toLowerCase();
+  // Build colour terms to handle all naming variations in the product list
+  const c = colour.toLowerCase();
+  const colourTerms = [c];
+  if (c === 'graphite grey') colourTerms.push('graphite');
+  if (c === 'sepia brown') colourTerms.push('sepia');
+  if (c === 'melchers green') colourTerms.push('melchers');
+
   return PRICING_PRODUCTS
     .map((p, i) => ({p, i}))
     .filter(({p}) => {
       const s = p.search.toLowerCase();
-      const hasColour = s.includes(colourLower) || (colourLower === 'graphite grey' && s.includes('graphite'));
+      const hasColour = colourTerms.some(term => s.includes(term));
       const hasKeyword = keywords.some(k => s.includes(k.toLowerCase()));
       return hasColour && hasKeyword;
     });
