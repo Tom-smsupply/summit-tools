@@ -1521,6 +1521,7 @@ function buildColourButtons() {
 
 function selectColour(colour) {
   tmColour = colour;
+  tmMappings = {}; // clear old mappings so dropdowns default to first option for new colour
   buildColourButtons();
   const totals = getTransferTotals();
   buildMappingRows(totals);
