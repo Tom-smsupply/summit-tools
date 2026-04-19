@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest-pricing.json">
+<title>Summit Metal Supply — Contractor Pricing Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --steel: #1a2332;
+    --steel-mid: #243042;
+    --steel-light: #2e3d52;
+    --accent: #d4a017;
+    --accent-light: #e8b82a;
+    --accent-faint: rgba(212,160,23,0.12);
+    --text: #e8edf2;
+    --text-muted: #8fa0b3;
+    --border: rgba(255,255,255,0.08);
+    --border-accent: rgba(212,160,23,0.35);
+    --success: #2e7d52;
+    --card-bg: rgba(255,255,255,0.04);
+    --radius: 6px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--steel);
+    color: var(--text);
+    min-height: 100vh;
+    background-image: 
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 60px),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 60px);
+  }
+
+  header {
+    background: linear-gradient(135deg, #0d1520 0%, #1a2332 60%, #1f2d40 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 82px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .header-titles {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .company-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* Clickable logo link */
+  .logo-link {
+    text-decoration: none;
+    display: block;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .logo-link::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1px solid rgba(212,160,23,0.5);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .logo-link:hover::after { opacity: 1; }
+
+  .logo-link:hover .logo-icon {
+    background: var(--accent-light);
+    transform: scale(1.08);
+  }
+
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: var(--accent);
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; color: var(--steel);
+    flex-shrink: 0;
+    transition: background 0.15s, transform 0.15s;
+    cursor: pointer;
+  }
+
+  header h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  header h1 span { color: var(--accent); }
+
+  .main-layout {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 0;
+    min-height: calc(100vh - 82px);
+  }
+
+  .left-panel {
+    padding: 32px 40px;
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    max-height: calc(100vh - 82px);
+  }
+
+  .right-panel {
+    padding: 32px 28px;
+    background: rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 82px);
+    overflow-y: auto;
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 700px) {
+    header {
+      padding: 0 16px;
+      height: 70px;
+    }
+
+    .logo-icon {
+      width: 34px; height: 34px;
+      font-size: 16px;
+    }
+
+    .company-name {
+      font-size: 11px;
+      letter-spacing: 2px;
+    }
+
+    header h1 {
+      font-size: 16px;
+      letter-spacing: 1px;
+    }
+
+    .main-layout {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto;
+      min-height: unset;
+    }
+
+    .left-panel {
+      padding: 20px 16px;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      max-height: none;
+      overflow-y: visible;
+    }
+
+    #results {
+      max-height: 45vh;
+    }
+
+    .right-panel {
+      padding: 20px 16px;
+      max-height: none;
+      overflow-y: visible;
+    }
+
+    #quoteList {
+      max-height: none;
+    }
+
+    .action-btns {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .modal {
+      width: calc(100vw - 32px);
+      padding: 24px 20px;
+    }
+  }
+
+  .section-label {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-accent);
+  }
+
+  .search-wrap {
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  #searchInput {
+    width: 100%;
+    background: var(--steel-mid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 16px;
+    padding: 14px 16px 14px 48px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  #searchInput:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-faint);
+  }
+
+  #searchInput::placeholder { color: var(--text-muted); }
+
+  .search-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    background: var(--accent-faint);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+  }
+
+  .results-meta {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .results-count { color: var(--accent); font-weight: 600; }
+
+  #results {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  #results::-webkit-scrollbar { width: 4px; }
+  #results::-webkit-scrollbar-track { background: transparent; }
+  #results::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .result-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    gap: 12px;
+  }
+
+  .result-item:hover {
+    border-color: var(--accent);
+    background: var(--accent-faint);
+    transform: translateX(2px);
+  }
+
+  .result-item.already-added {
+    border-color: var(--success);
+    opacity: 0.6;
+  }
+
+  .result-name {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.4;
+  }
+
+  .result-item:hover .result-name { color: #fff; }
+
+  .result-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .result-price {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .add-btn {
+    width: 30px; height: 30px;
+    background: var(--steel-light);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-muted);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+
+  .add-btn:hover {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--steel);
+  }
+
+  .already-added .add-btn {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+    cursor: default;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-muted);
+  }
+
+  .no-results .nr-icon { font-size: 40px; margin-bottom: 12px; }
+  .no-results p { font-size: 14px; }
+
+  .search-prompt {
+    text-align: center;
+    padding: 14px 20px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    font-size: 13px;
+  }
+
+  .search-prompt .sp-icon { font-size: 18px; opacity: 0.5; }
+
+  /* RIGHT PANEL - Quote List */
+  .quote-header {
+    margin-bottom: 20px;
+  }
+
+  .quote-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 40px 0;
+  }
+
+  .quote-empty .qe-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+  .quote-empty p { font-size: 14px; line-height: 1.6; }
+
+  #quoteList {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  #quoteList::-webkit-scrollbar { width: 4px; }
+  #quoteList::-webkit-scrollbar-track { background: transparent; }
+  #quoteList::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .quote-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    animation: slideIn 0.2s ease;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .qi-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .qi-name {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .qi-remove {
+    background: none;
+    border: none;
+    color: #5a6a7a;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 2px;
+    line-height: 1;
+    transition: color 0.15s;
+    flex-shrink: 0;
+  }
+
+  .qi-remove:hover { color: #e05555; }
+
+  .qi-bottom {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .qty-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+
+  .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .qty-btn {
+    width: 28px; height: 28px;
+    background: var(--steel-light);
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.1s;
+  }
+
+  .qty-btn:hover { background: var(--accent); color: var(--steel); }
+
+  .qty-input {
+    width: 50px;
+    background: var(--steel-mid);
+    border: none;
+    color: var(--text);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    padding: 0 4px;
+    height: 28px;
+    outline: none;
+  }
+
+  .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  .qi-subtotal {
+    margin-left: auto;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+
+  .quote-footer {
+    border-top: 1px solid var(--border);
+    padding-top: 20px;
+    flex-shrink: 0;
+  }
+
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+
+  .total-label {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-family: 'Rajdhani', sans-serif;
+  }
+
+  .total-amount {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .total-items {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+
+  .action-btns {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .btn {
+    padding: 12px;
+    border-radius: var(--radius);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-gold {
+    background: var(--accent);
+    color: var(--steel);
+  }
+
+  .btn-gold:hover { background: var(--accent-light); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,160,23,0.3); }
+
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-clear {
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(224,85,85,0.25);
+    color: #7a8a9a;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  .btn-clear:hover { border-color: #e05555; color: #e05555; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.active { display: flex; }
+
+  .modal {
+    background: var(--steel-mid);
+    border: 1px solid var(--border-accent);
+    border-radius: 10px;
+    padding: 36px;
+    width: 440px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .modal h2 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .modal p {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+
+  .modal label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .modal input {
+    width: 100%;
+    background: var(--steel);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 16px;
+    padding: 13px 16px;
+    outline: none;
+    margin-bottom: 24px;
+    transition: border-color 0.2s;
+  }
+
+  .modal input:focus { border-color: var(--accent); }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .modal-actions .btn { min-width: 120px; }
+
+  /* PRINT STYLES */
+  @media print {
+    body { background: #fff !important; color: #000 !important; }
+    header, .left-panel, .modal-overlay, .action-btns, .btn-clear, .qi-remove, .qty-btn, .qty-input, .section-label { display: none !important; }
+    .main-layout { display: block !important; }
+    .right-panel {
+      max-height: none !important;
+      overflow: visible !important;
+      padding: 0 !important;
+      background: white !important;
+    }
+    .print-header { display: block !important; }
+    .quote-item { border: 1px solid #ddd !important; background: #fafafa !important; break-inside: avoid; margin-bottom: 4px !important; }
+    .qi-name { color: #000 !important; font-size: 13px !important; }
+    .qi-subtotal { color: #000 !important; font-weight: 700 !important; }
+    .qty-label { color: #555 !important; }
+    .print-qty-val { display: inline !important; color: #000 !important; font-weight: 600 !important; }
+    .total-amount { color: #000 !important; font-size: 24px !important; }
+    .total-label { color: #555 !important; }
+    .total-items { color: #555 !important; }
+    .quote-footer { border-top: 2px solid #000 !important; padding-top: 12px !important; }
+    .quote-header { display: none !important; }
+  }
+
+  .print-header { display: none; }
+  .print-qty-val { display: none; }
+
+  /* Highlight match */
+  mark {
+    background: var(--accent-faint);
+    color: var(--accent-light);
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <a href="https://www.smsupply.ca" target="_blank" rel="noopener" class="logo-link" title="Visit smsupply.ca">
+      <div class="logo-icon">🌐</div>
+    </a>
+    <div class="header-titles">
+      <div class="company-name">Summit Metal Supply</div>
+      <h1>Contractor <span>Pricing</span> Calculator</h1>
+    </div>
+  </div>
+</header>
+
+<div class="main-layout">
+  <!-- LEFT: Search -->
+  <div class="left-panel">
+    <div class="section-label">Search Products</div>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder='e.g. "standing seam ridge cap" or "tuff rib black"' autocomplete="off" />
+    </div>
+    <div class="search-hint">
+      💡 Type naturally — "standing seam" finds all <em>Stnd Seam</em> products. Tap an item to add it; tap again to remove it.
+    </div>
+    <div class="results-meta">
+      <span id="resultsCount" class="results-count"></span>
+      <span id="resultsNote" style="font-size:12px;"></span>
+    </div>
+    <div id="results"></div>
+  </div>
+
+  <!-- RIGHT: Quote -->
+  <div class="right-panel">
+    <!-- Print Header: lives here so it prints at the top of the right panel content -->
+    <div class="print-header" id="printHeader" style="display:none; padding-bottom: 16px; margin-bottom: 16px; border-bottom: 2px solid #d4a017;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+        <div>
+          <div style="font-size:20px; font-weight:700; letter-spacing:1px; color:#1a2332;">SUMMIT METAL SUPPLY</div>
+          <div style="font-size:12px; color:#666; letter-spacing:1px;">smsupply.ca</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px; color:#555;" id="printDate"></div>
+        </div>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+        <div>
+          <div style="font-size:11px; text-transform:uppercase; letter-spacing:2px; color:#888; margin-bottom:2px;">Project</div>
+          <div style="font-size:16px; font-weight:600; color:#1a2332;" id="printProjectName"></div>
+        </div>
+        <div style="font-size:18px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#d4a017;">ESTIMATED CONTRACTOR COST</div>
+      </div>
+    </div>
+
+    <div class="quote-header">
+      <div class="section-label">Estimated Contractor Cost</div>
+    </div>
+
+    <div id="quoteEmpty" class="quote-empty">
+      <div class="qe-icon">📋</div>
+      <p>Search for products above and tap<br><strong>+</strong> to add them to your quote.</p>
+    </div>
+
+    <div id="quoteList" style="display:none"></div>
+
+    <div class="quote-footer">
+      <div class="total-row">
+        <span class="total-label" style="font-weight:700;">Total</span>
+        <span class="total-amount" id="totalAmount">$0.00</span>
+      </div>
+      <div class="total-items" id="totalItems">0 line items</div>
+
+      <div class="action-btns">
+        <button class="btn btn-gold" onclick="triggerAction('save')">🖨 Print / Save PDF</button>
+      </div>
+      <button class="btn btn-clear" onclick="clearQuote()">✕ Clear Quote</button>
+    </div>
+  </div>
+</div>
+
+<!-- Project Name Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>Project Details</h2>
+    <p>Enter a project name to label this quote. To save as PDF, choose <strong>"Save as PDF"</strong> as the destination in the print dialog.</p>
+    <label for="projectName">Project Name</label>
+    <input type="text" id="projectName" placeholder="e.g. Smith Residence - Roof 2025" maxlength="80" />
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" id="confirmBtn" onclick="confirmAction()">🖨 Print / Save PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PRODUCTS = [{"name": "10-9 x 1 1/8\" Standing Seam Screw", "search": "10-9 x 1 1/8\" standing seam screw", "price": 0.11}, {"name": "1 5/8\" Mechanical Clip", "search": "1 5/8\" mechanicalanical clip", "price": 0.34}, {"name": "1x4", "search": "1x4", "price": 3.93}, {"name": "24g Mech Stnd Seam Black Panel", "search": "24 gauge mechanical standing seam black panel", "price": 3.45}, {"name": "24g Mech Stnd Seam Charcoal Panel", "search": "24 gauge mechanical standing seam charcoal panel", "price": 3.45}, {"name": "24g Mech Stnd Seam Dark Brown Panel", "search": "24 gauge mechanical standing seam dark brown panel", "price": 3.45}, {"name": "24g Mech Stnd Seam Ebony Panel", "search": "24 gauge mechanical standing seam ebony panel", "price": 3.7}, {"name": "24g Mech Stnd Seam Graphite grey Panel", "search": "24 gauge mechanical standing seam graphite grey panel", "price": 3.7}, {"name": "24g Mech Stnd Seam Melchers Green Panel", "search": "24 gauge mechanical standing seam melchers green panel", "price": 3.45}, {"name": "24g Mech Stnd Seam Sepia Brown Panel", "search": "24 gauge mechanical standing seam sepia brown panel", "price": 3.7}, {"name": "26 Base Trim 2\"-Black", "search": "26 base trim 2\"-black", "price": 18.61}, {"name": "26 Base Trim 2\"-Charcoal", "search": "26 base trim 2\"-charcoal", "price": 18.61}, {"name": "26 Base Trim 2\"-Dark Brown", "search": "26 base trim 2\"-dark brown", "price": 18.61}, {"name": "26 Base Trim 2\"-Ebony Textured", "search": "26 base trim 2\"-ebony textured", "price": 20.16}, {"name": "26 Base Trim 2\"-Graphite Textured", "search": "26 base trim 2\"-graphite textured", "price": 20.16}, {"name": "26 Base Trim 2\"-Sepia Brown Textured", "search": "26 base trim 2\"-sepia brown textured", "price": 20.16}, {"name": "26 Base Trim-Black", "search": "26 base trim-black", "price": 11.35}, {"name": "26 Base Trim-Charcoal", "search": "26 base trim-charcoal", "price": 11.35}, {"name": "26 Base Trim-Dark Brown", "search": "26 base trim-dark brown", "price": 11.35}, {"name": "26 Base Trim-Ebony Textured", "search": "26 base trim-ebony textured", "price": 12.22}, {"name": "26 Base Trim-Graphite Textured", "search": "26 base trim-graphite textured", "price": 12.22}, {"name": "26 Base Trim-Sepia Brown Textured", "search": "26 base trim-sepia brown textured", "price": 12.22}, {"name": "26 Chimney Kit-Black", "search": "26 chimney kit-black", "price": 61.26}, {"name": "26 Chimney Kit-Charcoal", "search": "26 chimney kit-charcoal", "price": 61.26}, {"name": "26 Chimney Kit-Dark Brown", "search": "26 chimney kit-dark brown", "price": 61.26}, {"name": "26 Chimney Kit-Ebony Textured", "search": "26 chimney kit-ebony textured", "price": 66.56}, {"name": "26 Chimney Kit-Graphite Textured", "search": "26 chimney kit-graphite textured", "price": 66.56}, {"name": "26 Chimney Kit-Sepia Brown Textured", "search": "26 chimney kit-sepia brown textured", "price": 66.56}, {"name": "26 Drip Edge 1-1/2\"-Black", "search": "26 drip edge 1-1/2\"-black", "price": 12.45}, {"name": "26 Drip Edge 1-1/2\"-Charcoal", "search": "26 drip edge 1-1/2\"-charcoal", "price": 12.45}, {"name": "26 Drip Edge 1-1/2\"-Dark Brown", "search": "26 drip edge 1-1/2\"-dark brown", "price": 12.45}, {"name": "26 Drip Edge 1-1/2\"-Ebony Textured", "search": "26 drip edge 1-1/2\"-ebony textured", "price": 13.46}, {"name": "26 Drip Edge 1-1/2\"-Graphite Textured", "search": "26 drip edge 1-1/2\"-graphite textured", "price": 13.46}, {"name": "26 Drip Edge 1-1/2\"-Sepia Brown Textured", "search": "26 drip edge 1-1/2\"-sepia brown textured", "price": 13.46}, {"name": "26 Drip Edge-Black", "search": "26 drip edge-black", "price": 11.35}, {"name": "26 Drip Edge-Charcoal", "search": "26 drip edge-charcoal", "price": 11.35}, {"name": "26 Drip Edge-Dark Brown", "search": "26 drip edge-dark brown", "price": 11.35}, {"name": "26 Drip Edge-Ebony Textured", "search": "26 drip edge-ebony textured", "price": 12.22}, {"name": "26 Drip Edge-Graphite Textured", "search": "26 drip edge-graphite textured", "price": 12.22}, {"name": "26 Drip Edge-Sepia Brown Textured", "search": "26 drip edge-sepia brown textured", "price": 12.22}, {"name": "26 Eave Drip 1\"-Black", "search": "26 eave drip 1\"-black", "price": 13.57}, {"name": "26 Eave Drip 1\"-Charcoal", "search": "26 eave drip 1\"-charcoal", "price": 13.57}, {"name": "26 Eave Drip 1\"-Dark Brown", "search": "26 eave drip 1\"-dark brown", "price": 13.57}, {"name": "26 Eave Drip 1\"-Ebony Textured", "search": "26 eave drip 1\"-ebony textured", "price": 14.65}, {"name": "26 Eave Drip 1\"-Graphite Textured", "search": "26 eave drip 1\"-graphite textured", "price": 14.65}, {"name": "26 Eave Drip 1\"-Sepia Brown Textured", "search": "26 eave drip 1\"-sepia brown textured", "price": 14.65}, {"name": "26 Eave Drip 2\"-Black", "search": "26 eave drip 2\"-black", "price": 14.54}, {"name": "26 Eave Drip 2\"-Charcoal", "search": "26 eave drip 2\"-charcoal", "price": 14.54}, {"name": "26 Eave Drip 2\"-Dark Brown", "search": "26 eave drip 2\"-dark brown", "price": 14.54}, {"name": "26 Eave Drip 2\"-Ebony Textured", "search": "26 eave drip 2\"-ebony textured", "price": 15.87}, {"name": "26 Eave Drip 2\"-Graphite Textured", "search": "26 eave drip 2\"-graphite textured", "price": 15.87}, {"name": "26 Eave Drip 2\"-Sepia Brown Textured", "search": "26 eave drip 2\"-sepia brown textured", "price": 15.87}, {"name": "26 End Wall-Black", "search": "26 end wall-black", "price": 25.26}, {"name": "26 End Wall-Charcoal", "search": "26 end wall-charcoal", "price": 25.26}, {"name": "26 End Wall-Dark Brown", "search": "26 end wall-dark brown", "price": 25.26}, {"name": "26 End Wall-Ebony Textured", "search": "26 end wall-ebony textured", "price": 27.48}, {"name": "26 End Wall-Graphite Textured", "search": "26 end wall-graphite textured", "price": 27.48}, {"name": "26 End Wall-Sepia Brown Textured", "search": "26 end wall-sepia brown textured", "price": 27.48}, {"name": "26 Extended Eave 1\"-Black", "search": "26 extended eave 1\"-black", "price": 19.86}, {"name": "26 Extended Eave 1\"-Charcoal", "search": "26 extended eave 1\"-charcoal", "price": 19.86}, {"name": "26 Extended Eave 1\"-Dark Brown", "search": "26 extended eave 1\"-dark brown", "price": 19.86}, {"name": "26 Extended Eave 1\"-Ebony Textured", "search": "26 extended eave 1\"-ebony textured", "price": 21.39}, {"name": "26 Extended Eave 1\"-Graphite Textured", "search": "26 extended eave 1\"-graphite textured", "price": 21.39}, {"name": "26 Extended Eave 1\"-Sepia Brown Textured", "search": "26 extended eave 1\"-sepia brown textured", "price": 21.39}, {"name": "26 Extended Eave 2\"-Black", "search": "26 extended eave 2\"-black", "price": 22.07}, {"name": "26 Extended Eave 2\"-Charcoal", "search": "26 extended eave 2\"-charcoal", "price": 22.07}, {"name": "26 Extended Eave 2\"-Dark Brown", "search": "26 extended eave 2\"-dark brown", "price": 22.07}, {"name": "26 Extended Eave 2\"-Ebony Textured", "search": "26 extended eave 2\"-ebony textured", "price": 23.83}, {"name": "26 Extended Eave 2\"-Graphite Textured", "search": "26 extended eave 2\"-graphite textured", "price": 23.83}, {"name": "26 Extended Eave 2\"-Sepia Brown Textured", "search": "26 extended eave 2\"-sepia brown textured", "price": 23.83}, {"name": "26 Gable Cap-Black", "search": "26 gable cap-black", "price": 23.8}, {"name": "26 Gable Cap-Charcoal", "search": "26 gable cap-charcoal", "price": 23.8}, {"name": "26 Gable Cap-Dark Brown", "search": "26 gable cap-dark brown", "price": 23.8}, {"name": "26 Gable Cap-Ebony Textured", "search": "26 gable cap-ebony textured", "price": 25.66}, {"name": "26 Gable Cap-Graphite Textured", "search": "26 gable cap-graphite textured", "price": 25.66}, {"name": "26 Gable Cap reroof-Black", "search": "26 gable cap reroof-black", "price": 24.89}, {"name": "26 Gable Cap reroof-Charcoal", "search": "26 gable cap reroof-charcoal", "price": 24.89}, {"name": "26 Gable Cap reroof-Dark Brown", "search": "26 gable cap reroof-dark brown", "price": 24.89}, {"name": "26 Gable Cap reroof-Ebony Textured", "search": "26 gable cap reroof-ebony textured", "price": 26.89}, {"name": "26 Gable Cap reroof-Graphite Textured", "search": "26 gable cap reroof-graphite textured", "price": 26.89}, {"name": "26 Gable Cap reroof-Sepia Brown Textured", "search": "26 gable cap reroof-sepia brown textured", "price": 26.89}, {"name": "26 Gable Cap-Sepia Brown Textured", "search": "26 gable cap-sepia brown textured", "price": 25.66}, {"name": "26 Gable Divider 2\"-Black", "search": "26 gable divider 2\"-black", "price": 13.57}, {"name": "26 Gable Divider 2\"-Charcoal", "search": "26 gable divider 2\"-charcoal", "price": 13.57}, {"name": "26 Gable Divider 2\"-Dark Brown", "search": "26 gable divider 2\"-dark brown", "price": 13.57}, {"name": "26 Gable Divider 2\"-Ebony Textured", "search": "26 gable divider 2\"-ebony textured", "price": 14.65}, {"name": "26 Gable Divider 2\"-Graphite Textured", "search": "26 gable divider 2\"-graphite textured", "price": 14.65}, {"name": "26 Gable Divider 2\"-Sepia Brown Textured", "search": "26 gable divider 2\"-sepia brown textured", "price": 14.65}, {"name": "26 Gable Divider-Black", "search": "26 gable divider-black", "price": 11.35}, {"name": "26 Gable Divider-Charcoal", "search": "26 gable divider-charcoal", "price": 11.35}, {"name": "26 Gable Divider-Dark Brown", "search": "26 gable divider-dark brown", "price": 11.35}, {"name": "26 Gable Divider-Ebony Textured", "search": "26 gable divider-ebony textured", "price": 12.22}, {"name": "26 Gable Divider-Graphite Textured", "search": "26 gable divider-graphite textured", "price": 12.22}, {"name": "26 Gable Divider-Sepia Brown Textured", "search": "26 gable divider-sepia brown textured", "price": 12.22}, {"name": "26 Gable Starter F 2\"-Black", "search": "26 gable starter f 2\"-black", "price": 28.36}, {"name": "26 Gable Starter F 2\"-Charcoal", "search": "26 gable starter f 2\"-charcoal", "price": 28.36}, {"name": "26 Gable Starter F 2\"-Dark Brown", "search": "26 gable starter f 2\"-dark brown", "price": 28.36}, {"name": "26 Gable Starter F 2\"-Ebony Textured", "search": "26 gable starter f 2\"-ebony textured", "price": 30.56}, {"name": "26 Gable Starter F 2\"-Graphite Textured", "search": "26 gable starter f 2\"-graphite textured", "price": 30.56}, {"name": "26 Gable Starter F 2\"-Sepia Brown Textured", "search": "26 gable starter f 2\"-sepia brown textured", "price": 30.56}, {"name": "26 Gambrel Flashing-Black", "search": "26 gambrel flashing-black", "price": 29.08}, {"name": "26 Gambrel Flashing-Charcoal", "search": "26 gambrel flashing-charcoal", "price": 29.08}, {"name": "26 Gambrel Flashing-Dark Brown", "search": "26 gambrel flashing-dark brown", "price": 29.08}, {"name": "26 Gambrel Flashing-Ebony Textured", "search": "26 gambrel flashing-ebony textured", "price": 31.74}, {"name": "26 Gambrel Flashing-Graphite Textured", "search": "26 gambrel flashing-graphite textured", "price": 31.74}, {"name": "26 Gambrel Flashing-Sepia Brown Textured", "search": "26 gambrel flashing-sepia brown textured", "price": 31.74}, {"name": "26g Diamond Rib Black Panel", "search": "26 gauge diamond rib black panel", "price": 2.05}, {"name": "26g Diamond Rib Charcoal Panel", "search": "26 gauge diamond rib charcoal panel", "price": 2.05}, {"name": "26g Diamond Rib Dark Brown Panel", "search": "26 gauge diamond rib dark brown panel", "price": 2.05}, {"name": "26g Diamond Rib Ebony Panel", "search": "26 gauge diamond rib ebony panel", "price": 2.14}, {"name": "26g Diamond Rib Graphite grey Panel", "search": "26 gauge diamond rib graphite grey panel", "price": 2.14}, {"name": "26g Diamond Rib Sepia Brown Panel", "search": "26 gauge diamond rib sepia brown panel", "price": 2.14}, {"name": "26g Mech Stnd Seam Black Panel", "search": "26 gauge mechanical standing seam black panel", "price": 3.23}, {"name": "26g Mech Stnd Seam Charcoal Panel", "search": "26 gauge mechanical standing seam charcoal panel", "price": 3.23}, {"name": "26g Mech Stnd Seam Dark Brown Panel", "search": "26 gauge mechanical standing seam dark brown panel", "price": 3.23}, {"name": "26g Mech Stnd Seam Ebony Panel", "search": "26 gauge mechanical standing seam ebony panel", "price": 3.44}, {"name": "26g Mech Stnd Seam Graphite grey Panel", "search": "26 gauge mechanical standing seam graphite grey panel", "price": 3.44}, {"name": "26g Mech Stnd Seam Sepia Brown Panel", "search": "26 gauge mechanical standing seam sepia brown panel", "price": 3.44}, {"name": "26g Tuff Rib Black Panel", "search": "26 gauge tuff rib black panel", "price": 2.05}, {"name": "26g Tuff Rib Charcoal Panel", "search": "26 gauge tuff rib charcoal panel", "price": 2.05}, {"name": "26g Tuff Rib Dark Brown Panel", "search": "26 gauge tuff rib dark brown panel", "price": 2.05}, {"name": "26g Tuff Rib Ebony Panel", "search": "26 gauge tuff rib ebony panel", "price": 2.14}, {"name": "26g Tuff Rib Graphite grey Panel", "search": "26 gauge tuff rib graphite grey panel", "price": 2.14}, {"name": "26g Tuff Rib Sepia Brown Panel", "search": "26 gauge tuff rib sepia brown panel", "price": 2.14}, {"name": "26 Inside Corner-Black", "search": "26 inside corner-black", "price": 32.17}, {"name": "26 Inside Corner-Charcoal", "search": "26 inside corner-charcoal", "price": 32.17}, {"name": "26 Inside Corner-Dark Brown", "search": "26 inside corner-dark brown", "price": 32.17}, {"name": "26 Inside Corner-Ebony Textured", "search": "26 inside corner-ebony textured", "price": 34.83}, {"name": "26 Inside Corner-Graphite Textured", "search": "26 inside corner-graphite textured", "price": 34.83}, {"name": "26 Inside Corner-Sepia Brown Textured", "search": "26 inside corner-sepia brown textured", "price": 34.83}, {"name": "26 J-Channel-Black", "search": "26 j-channel-black", "price": 10.12}, {"name": "26 J-Channel-Charcoal", "search": "26 j-channel-charcoal", "price": 10.12}, {"name": "26 J-Channel-Dark Brown", "search": "26 j-channel-dark brown", "price": 10.12}, {"name": "26 J-Channel-Ebony Textured", "search": "26 j-channel-ebony textured", "price": 10.96}, {"name": "26 J-Channel-Graphite Textured", "search": "26 j-channel-graphite textured", "price": 10.96}, {"name": "26 J-Channel-Sepia Brown Textured", "search": "26 j-channel-sepia brown textured", "price": 10.96}, {"name": "26 J-Channel-Woodgrain", "search": "26 j-channel-woodgrain", "price": 15.01}, {"name": "26 Outside Corner-Black", "search": "26 outside corner-black", "price": 32.17}, {"name": "26 Outside Corner-Charcoal", "search": "26 outside corner-charcoal", "price": 32.17}, {"name": "26 Outside Corner-Dark Brown", "search": "26 outside corner-dark brown", "price": 32.17}, {"name": "26 Outside Corner-Ebony Textured", "search": "26 outside corner-ebony textured", "price": 34.83}, {"name": "26 Outside Corner-Graphite Textured", "search": "26 outside corner-graphite textured", "price": 34.83}, {"name": "26 Outside Corner-Sepia Brown Textured", "search": "26 outside corner-sepia brown textured", "price": 34.83}, {"name": "26 Outside Corner-Woodgrain", "search": "26 outside corner-woodgrain", "price": 33.46}, {"name": "26 Pitch Change-Black", "search": "26 pitch change-black", "price": 33.52}, {"name": "26 Pitch Change-Charcoal", "search": "26 pitch change-charcoal", "price": 33.52}, {"name": "26 Pitch Change-Dark Brown", "search": "26 pitch change-dark brown", "price": 33.52}, {"name": "26 Pitch Change-Ebony Textured", "search": "26 pitch change-ebony textured", "price": 36.64}, {"name": "26 Pitch Change-Graphite Textured", "search": "26 pitch change-graphite textured", "price": 36.64}, {"name": "26 Pitch Change-Sepia Brown Textured", "search": "26 pitch change-sepia brown textured", "price": 36.64}, {"name": "26 Ridge Cap-Black", "search": "26 ridge cap-black", "price": 32.29}, {"name": "26 Ridge Cap-Charcoal", "search": "26 ridge cap-charcoal", "price": 32.29}, {"name": "26 Ridge Cap-Dark Brown", "search": "26 ridge cap-dark brown", "price": 32.29}, {"name": "26 Ridge Cap-Ebony Textured", "search": "26 ridge cap-ebony textured", "price": 35.39}, {"name": "26 Ridge Cap-Graphite Textured", "search": "26 ridge cap-graphite textured", "price": 35.39}, {"name": "26 Ridge Cap-Sepia Brown Textured", "search": "26 ridge cap-sepia brown textured", "price": 35.39}, {"name": "26 Ridge Drip-Black", "search": "26 ridge drip-black", "price": 26.49}, {"name": "26 Ridge Drip-Charcoal", "search": "26 ridge drip-charcoal", "price": 26.49}, {"name": "26 Ridge Drip-Dark Brown", "search": "26 ridge drip-dark brown", "price": 26.49}, {"name": "26 Ridge Drip-Ebony Textured", "search": "26 ridge drip-ebony textured", "price": 28.71}, {"name": "26 Ridge Drip-Graphite Textured", "search": "26 ridge drip-graphite textured", "price": 28.71}, {"name": "26 Ridge Drip-Sepia Brown Textured", "search": "26 ridge drip-sepia brown textured", "price": 28.71}, {"name": "26 Side Wall-Black", "search": "26 side wall-black", "price": 25.87}, {"name": "26 Side Wall-Charcoal", "search": "26 side wall-charcoal", "price": 25.87}, {"name": "26 Side Wall-Dark Brown", "search": "26 side wall-dark brown", "price": 25.87}, {"name": "26 Side Wall-Ebony Textured", "search": "26 side wall-ebony textured", "price": 28.09}, {"name": "26 Side Wall-Graphite Textured", "search": "26 side wall-graphite textured", "price": 28.09}, {"name": "26 Side Wall-Sepia Brown Textured", "search": "26 side wall-sepia brown textured", "price": 28.09}, {"name": "26 Snow Guard-Black", "search": "26 snow guard-black", "price": 18.98}, {"name": "26 Snow Guard-Charcoal", "search": "26 snow guard-charcoal", "price": 18.98}, {"name": "26 Snow Guard-Dark Brown", "search": "26 snow guard-dark brown", "price": 18.98}, {"name": "26 Snow Guard-Ebony Textured", "search": "26 snow guard-ebony textured", "price": 20.76}, {"name": "26 Snow Guard-Graphite Textured", "search": "26 snow guard-graphite textured", "price": 20.76}, {"name": "26 Snow Guard-Sepia Brown Textured", "search": "26 snow guard-sepia brown textured", "price": 20.76}, {"name": "26 Snow Guard Strong-Black", "search": "26 snow guard strong-black", "price": 36.0}, {"name": "26 Snow Guard Strong-Charcoal", "search": "26 snow guard strong-charcoal", "price": 36.0}, {"name": "26 Snow Guard Strong-Dark Brown", "search": "26 snow guard strong-dark brown", "price": 36.0}, {"name": "26 Snow Guard Strong-Ebony Textured", "search": "26 snow guard strong-ebony textured", "price": 39.11}, {"name": "26 Snow Guard Strong-Graphite Textured", "search": "26 snow guard strong-graphite textured", "price": 39.11}, {"name": "26 Snow Guard Strong-Sepia Brown Textured", "search": "26 snow guard strong-sepia brown textured", "price": 39.11}, {"name": "26 V-Valley 24\"-Black", "search": "26 v-valley 24\"-black", "price": 52.53}, {"name": "26 V-Valley 24\"-Charcoal", "search": "26 v-valley 24\"-charcoal", "price": 52.53}, {"name": "26 V-Valley 24\"-Dark Brown", "search": "26 v-valley 24\"-dark brown", "price": 52.53}, {"name": "26 V-Valley 24\"-Ebony Textured", "search": "26 v-valley 24\"-ebony textured", "price": 57.37}, {"name": "26 V-Valley 24\"-Graphite Textured", "search": "26 v-valley 24\"-graphite textured", "price": 57.37}, {"name": "26 V-Valley 24\"-Sepia Brown Textured", "search": "26 v-valley 24\"-sepia brown textured", "price": 57.37}, {"name": "26 W-Valley 24\"-Black", "search": "26 w-valley 24\"-black", "price": 52.53}, {"name": "26 W-Valley 24\"-Charcoal", "search": "26 w-valley 24\"-charcoal", "price": 52.53}, {"name": "26 W-Valley 24\"-Dark Brown", "search": "26 w-valley 24\"-dark brown", "price": 52.53}, {"name": "26 W-Valley 24\"-Ebony Textured", "search": "26 w-valley 24\"-ebony textured", "price": 57.37}, {"name": "26 W-Valley 24\"-Graphite Textured", "search": "26 w-valley 24\"-graphite textured", "price": 57.37}, {"name": "26 W-Valley 24\"-Sepia Brown Textured", "search": "26 w-valley 24\"-sepia brown textured", "price": 57.37}, {"name": "26 W-Valley 24\"w/cleat Melchers Green", "search": "26 w-valley 24\"w/cleat melchers green", "price": 63.75}, {"name": "29g Diamond Rib Black Panel", "search": "29 gauge diamond rib black panel", "price": 1.49}, {"name": "29g Diamond Rib Charcoal Panel", "search": "29 gauge diamond rib charcoal panel", "price": 1.49}, {"name": "29g Diamond Rib Dark Brown Panel", "search": "29 gauge diamond rib dark brown panel", "price": 1.49}, {"name": "29g Diamond Rib Ebony Panel", "search": "29 gauge diamond rib ebony panel", "price": 1.55}, {"name": "29g Diamond Rib Graphite grey Panel", "search": "29 gauge diamond rib graphite grey panel", "price": 1.55}, {"name": "29g Diamond Rib Sepia Brown Panel", "search": "29 gauge diamond rib sepia brown panel", "price": 1.55}, {"name": "29g Tuff Rib Black Panel", "search": "29 gauge tuff rib black panel", "price": 1.49}, {"name": "29g Tuff Rib Charcoal Panel", "search": "29 gauge tuff rib charcoal panel", "price": 1.49}, {"name": "29g Tuff Rib Dark Brown Panel", "search": "29 gauge tuff rib dark brown panel", "price": 1.49}, {"name": "29g Tuff Rib Ebony Panel", "search": "29 gauge tuff rib ebony panel", "price": 1.55}, {"name": "29g Tuff Rib Graphite grey Panel", "search": "29 gauge tuff rib graphite grey panel", "price": 1.55}, {"name": "29g Tuff Rib Sepia Brown Panel", "search": "29 gauge tuff rib sepia brown panel", "price": 1.55}, {"name": "Add Venting", "search": "add venting", "price": 4.25}, {"name": "Base Trim 2\"-Black", "search": "base trim 2\"-black", "price": 14.65}, {"name": "Base Trim 2\"-Charcoal", "search": "base trim 2\"-charcoal", "price": 14.65}, {"name": "Base Trim 2\"-Dark Brown", "search": "base trim 2\"-dark brown", "price": 14.65}, {"name": "Base Trim 2\"-Ebony Textured", "search": "base trim 2\"-ebony textured", "price": 15.88}, {"name": "Base Trim 2\"-Graphite Textured", "search": "base trim 2\"-graphite textured", "price": 15.88}, {"name": "Base Trim 2\"-Sepia Brown Textured", "search": "base trim 2\"-sepia brown textured", "price": 15.88}, {"name": "Base Trim-Black", "search": "base trim-black", "price": 8.94}, {"name": "Base Trim-Charcoal", "search": "base trim-charcoal", "price": 8.94}, {"name": "Base Trim-Dark Brown", "search": "base trim-dark brown", "price": 8.94}, {"name": "Base Trim-Ebony Textured", "search": "base trim-ebony textured", "price": 9.63}, {"name": "Base Trim-Graphite Textured", "search": "base trim-graphite textured", "price": 9.63}, {"name": "Base Trim-Sepia Brown Textured", "search": "base trim-sepia brown textured", "price": 9.63}, {"name": "Board & Batten 24G Smooth (10 ft lengths)", "search": "board & batten 24 gauge smooth (10 ft lengths)", "price": 4.72}, {"name": "Board & Batten 24G Textured (10 ft lengths)", "search": "board & batten 24 gauge textured (10 ft lengths)", "price": 5.05}, {"name": "Board & Batten 24G Woodgrain (10 ft lengths)", "search": "board & batten 24 gauge woodgrain (10 ft lengths)", "price": 6.8}, {"name": "Caulking Black Trempro 830+ (300ml)", "search": "caulking black trempro 830+ (300ml)", "price": 6.8}, {"name": "Caulking Brown Trempro 830+ (300ml)", "search": "caulking brown trempro 830+ (300ml)", "price": 6.8}, {"name": "Chimney Kit-Black", "search": "chimney kit-black", "price": 48.24}, {"name": "Chimney Kit-Charcoal", "search": "chimney kit-charcoal", "price": 48.24}, {"name": "Chimney Kit-Dark Brown", "search": "chimney kit-dark brown", "price": 48.24}, {"name": "Chimney Kit-Ebony Textured", "search": "chimney kit-ebony textured", "price": 52.42}, {"name": "Chimney Kit-Graphite Textured", "search": "chimney kit-graphite textured", "price": 52.42}, {"name": "Chimney Kit-Sepia Brown Textured", "search": "chimney kit-sepia brown textured", "price": 52.42}, {"name": "Drip Edge 1-1/2\"-Black", "search": "drip edge 1-1/2\"-black", "price": 9.81}, {"name": "Drip Edge 1-1/2\"-Charcoal", "search": "drip edge 1-1/2\"-charcoal", "price": 9.81}, {"name": "Drip Edge 1-1/2\"-Dark Brown", "search": "drip edge 1-1/2\"-dark brown", "price": 9.81}, {"name": "Drip Edge 1-1/2\"-Ebony Textured", "search": "drip edge 1-1/2\"-ebony textured", "price": 10.6}, {"name": "Drip Edge 1-1/2\"-Graphite Textured", "search": "drip edge 1-1/2\"-graphite textured", "price": 10.6}, {"name": "Drip Edge 1-1/2\"-Sepia Brown Textured", "search": "drip edge 1-1/2\"-sepia brown textured", "price": 10.6}, {"name": "Drip Edge-Black", "search": "drip edge-black", "price": 8.94}, {"name": "Drip Edge-Charcoal", "search": "drip edge-charcoal", "price": 8.94}, {"name": "Drip Edge-Dark Brown", "search": "drip edge-dark brown", "price": 8.94}, {"name": "Drip Edge-Ebony Textured", "search": "drip edge-ebony textured", "price": 9.63}, {"name": "Drip Edge-Graphite Textured", "search": "drip edge-graphite textured", "price": 9.63}, {"name": "Drip Edge-Sepia Brown Textured", "search": "drip edge-sepia brown textured", "price": 9.63}, {"name": "Eave Drip 1\"-Black", "search": "eave drip 1\"-black", "price": 10.68}, {"name": "Eave Drip 1\"-Charcoal", "search": "eave drip 1\"-charcoal", "price": 10.68}, {"name": "Eave Drip 1\"-Dark Brown", "search": "eave drip 1\"-dark brown", "price": 10.68}, {"name": "Eave Drip 1\"-Ebony Textured", "search": "eave drip 1\"-ebony textured", "price": 11.54}, {"name": "Eave Drip 1\"-Graphite Textured", "search": "eave drip 1\"-graphite textured", "price": 11.54}, {"name": "Eave Drip 1\"-Sepia Brown Textured", "search": "eave drip 1\"-sepia brown textured", "price": 11.54}, {"name": "Eave Drip 2\"-Black", "search": "eave drip 2\"-black", "price": 11.45}, {"name": "Eave Drip 2\"-Charcoal", "search": "eave drip 2\"-charcoal", "price": 11.45}, {"name": "Eave Drip 2\"-Dark Brown", "search": "eave drip 2\"-dark brown", "price": 11.45}, {"name": "Eave Drip 2\"-Ebony Textured", "search": "eave drip 2\"-ebony textured", "price": 12.49}, {"name": "Eave Drip 2\"-Graphite Textured", "search": "eave drip 2\"-graphite textured", "price": 12.49}, {"name": "Eave Drip 2\"-Sepia Brown Textured", "search": "eave drip 2\"-sepia brown textured", "price": 12.49}, {"name": "End Wall-Black", "search": "end wall-black", "price": 19.89}, {"name": "End Wall-Charcoal", "search": "end wall-charcoal", "price": 19.89}, {"name": "End Wall-Dark Brown", "search": "end wall-dark brown", "price": 19.89}, {"name": "End Wall-Ebony Textured", "search": "end wall-ebony textured", "price": 21.64}, {"name": "End Wall-Graphite Textured", "search": "end wall-graphite textured", "price": 21.64}, {"name": "End Wall-Sepia Brown Textured", "search": "end wall-sepia brown textured", "price": 21.64}, {"name": "Extended Eave 1\"-Black", "search": "extended eave 1\"-black", "price": 15.63}, {"name": "Extended Eave 1\"-Charcoal", "search": "extended eave 1\"-charcoal", "price": 15.63}, {"name": "Extended Eave 1\"-Dark Brown", "search": "extended eave 1\"-dark brown", "price": 15.63}, {"name": "Extended Eave 1\"-Ebony Textured", "search": "extended eave 1\"-ebony textured", "price": 16.85}, {"name": "Extended Eave 1\"-Graphite Textured", "search": "extended eave 1\"-graphite textured", "price": 16.85}, {"name": "Extended Eave 1\"-Sepia Brown Textured", "search": "extended eave 1\"-sepia brown textured", "price": 16.85}, {"name": "Extended Eave 2\"-Black", "search": "extended eave 2\"-black", "price": 17.38}, {"name": "Extended Eave 2\"-Charcoal", "search": "extended eave 2\"-charcoal", "price": 17.38}, {"name": "Extended Eave 2\"-Dark Brown", "search": "extended eave 2\"-dark brown", "price": 17.38}, {"name": "Extended Eave 2\"-Ebony Textured", "search": "extended eave 2\"-ebony textured", "price": 18.77}, {"name": "Extended Eave 2\"-Graphite Textured", "search": "extended eave 2\"-graphite textured", "price": 18.77}, {"name": "Extended Eave 2\"-Sepia Brown Textured", "search": "extended eave 2\"-sepia brown textured", "price": 18.77}, {"name": "Gable Cap-Black", "search": "gable cap-black", "price": 18.74}, {"name": "Gable Cap-Charcoal", "search": "gable cap-charcoal", "price": 18.74}, {"name": "Gable Cap-Dark Brown", "search": "gable cap-dark brown", "price": 18.74}, {"name": "Gable Cap-Ebony Textured", "search": "gable cap-ebony textured", "price": 20.21}, {"name": "Gable Cap-Graphite Textured", "search": "gable cap-graphite textured", "price": 20.21}, {"name": "Gable Cap reroof-Black", "search": "gable cap reroof-black", "price": 19.6}, {"name": "Gable Cap reroof-Charcoal", "search": "gable cap reroof-charcoal", "price": 19.6}, {"name": "Gable Cap reroof-Dark Brown", "search": "gable cap reroof-dark brown", "price": 19.6}, {"name": "Gable Cap reroof-Ebony Textured", "search": "gable cap reroof-ebony textured", "price": 21.18}, {"name": "Gable Cap reroof-Graphite Textured", "search": "gable cap reroof-graphite textured", "price": 21.18}, {"name": "Gable Cap reroof-Sepia Brown Textured", "search": "gable cap reroof-sepia brown textured", "price": 21.18}, {"name": "Gable Cap-Sepia Brown Textured", "search": "gable cap-sepia brown textured", "price": 20.21}, {"name": "Gable Divider 2\"-Black", "search": "gable divider 2\"-black", "price": 10.68}, {"name": "Gable Divider 2\"-Charcoal", "search": "gable divider 2\"-charcoal", "price": 10.68}, {"name": "Gable Divider 2\"-Dark Brown", "search": "gable divider 2\"-dark brown", "price": 10.68}, {"name": "Gable Divider 2\"-Ebony Textured", "search": "gable divider 2\"-ebony textured", "price": 11.54}, {"name": "Gable Divider 2\"-Graphite Textured", "search": "gable divider 2\"-graphite textured", "price": 11.54}, {"name": "Gable Divider 2\"-Sepia Brown Textured", "search": "gable divider 2\"-sepia brown textured", "price": 11.54}, {"name": "Gable Divider-Black", "search": "gable divider-black", "price": 8.94}, {"name": "Gable Divider-Charcoal", "search": "gable divider-charcoal", "price": 8.94}, {"name": "Gable Divider-Dark Brown", "search": "gable divider-dark brown", "price": 8.94}, {"name": "Gable Divider-Ebony Textured", "search": "gable divider-ebony textured", "price": 9.63}, {"name": "Gable Divider-Graphite Textured", "search": "gable divider-graphite textured", "price": 9.63}, {"name": "Gable Divider-Sepia Brown Textured", "search": "gable divider-sepia brown textured", "price": 9.63}, {"name": "Gable Starter F 2\"-Black", "search": "gable starter f 2\"-black", "price": 22.33}, {"name": "Gable Starter F 2\"-Charcoal", "search": "gable starter f 2\"-charcoal", "price": 22.33}, {"name": "Gable Starter F 2\"-Dark Brown", "search": "gable starter f 2\"-dark brown", "price": 22.33}, {"name": "Gable Starter F 2\"-Ebony Textured", "search": "gable starter f 2\"-ebony textured", "price": 24.06}, {"name": "Gable Starter F 2\"-Graphite Textured", "search": "gable starter f 2\"-graphite textured", "price": 24.06}, {"name": "Gable Starter F 2\"-Sepia Brown Textured", "search": "gable starter f 2\"-sepia brown textured", "price": 24.06}, {"name": "Gambrel Flashing-Black", "search": "gambrel flashing-black", "price": 22.9}, {"name": "Gambrel Flashing-Charcoal", "search": "gambrel flashing-charcoal", "price": 22.9}, {"name": "Gambrel Flashing-Dark Brown", "search": "gambrel flashing-dark brown", "price": 22.9}, {"name": "Gambrel Flashing-Ebony Textured", "search": "gambrel flashing-ebony textured", "price": 24.99}, {"name": "Gambrel Flashing-Graphite Textured", "search": "gambrel flashing-graphite textured", "price": 24.99}, {"name": "Gambrel Flashing-Sepia Brown Textured", "search": "gambrel flashing-sepia brown textured", "price": 24.99}, {"name": "Hex Roofing Screw 2 1/2\" Black", "search": "hex roofing screw 2 1/2\" black", "price": 0.15}, {"name": "Hex Roofing Screw 2\" Black", "search": "hex roofing screw 2\" black", "price": 0.15}, {"name": "Inside Corner-Black", "search": "inside corner-black", "price": 25.34}, {"name": "Inside Corner-Charcoal", "search": "inside corner-charcoal", "price": 25.34}, {"name": "Inside Corner-Dark Brown", "search": "inside corner-dark brown", "price": 25.34}, {"name": "Inside Corner-Ebony Textured", "search": "inside corner-ebony textured", "price": 27.43}, {"name": "Inside Corner-Graphite Textured", "search": "inside corner-graphite textured", "price": 27.43}, {"name": "Inside Corner-Sepia Brown Textured", "search": "inside corner-sepia brown textured", "price": 27.43}, {"name": "J-Channel-Black", "search": "j-channel-black", "price": 7.97}, {"name": "J-Channel-Charcoal", "search": "j-channel-charcoal", "price": 7.97}, {"name": "J-Channel-Dark Brown", "search": "j-channel-dark brown", "price": 7.97}, {"name": "J-Channel-Ebony Textured", "search": "j-channel-ebony textured", "price": 8.64}, {"name": "J-Channel-Graphite Textured", "search": "j-channel-graphite textured", "price": 8.64}, {"name": "J-Channel-Sepia Brown Textured", "search": "j-channel-sepia brown textured", "price": 8.64}, {"name": "Master Flash #3", "search": "master flash #3", "price": 19.23}, {"name": "Master Flash #4", "search": "master flash #4", "price": 29.02}, {"name": "Master Flash #6", "search": "master flash #6", "price": 42.24}, {"name": "Master Flash #8", "search": "master flash #8", "price": 72.13}, {"name": "Master Flash #8 High Heat", "search": "master flash #8 high heat", "price": 148.75}, {"name": "Master Flash #9", "search": "master flash #9", "price": 114.21}, {"name": "Master Flash #9 High Heat", "search": "master flash #9 high heat", "price": 255.0}, {"name": "Master Flash Hydro/Retro", "search": "master flash hydro/retro", "price": 38.25}, {"name": "Outside Corner-Black", "search": "outside corner-black", "price": 25.34}, {"name": "Outside Corner-Charcoal", "search": "outside corner-charcoal", "price": 25.34}, {"name": "Outside Corner-Dark Brown", "search": "outside corner-dark brown", "price": 25.34}, {"name": "Outside Corner-Ebony Textured", "search": "outside corner-ebony textured", "price": 27.43}, {"name": "Outside Corner-Graphite Textured", "search": "outside corner-graphite textured", "price": 27.43}, {"name": "Outside Corner-Sepia Brown Textured", "search": "outside corner-sepia brown textured", "price": 27.43}, {"name": "Pitch Change-Black", "search": "pitch change-black", "price": 26.39}, {"name": "Pitch Change-Charcoal", "search": "pitch change-charcoal", "price": 26.39}, {"name": "Pitch Change-Dark Brown", "search": "pitch change-dark brown", "price": 26.39}, {"name": "Pitch Change-Ebony Textured", "search": "pitch change-ebony textured", "price": 28.86}, {"name": "Pitch Change-Graphite Textured", "search": "pitch change-graphite textured", "price": 28.86}, {"name": "Pitch Change-Sepia Brown Textured", "search": "pitch change-sepia brown textured", "price": 28.86}, {"name": "Ridge Cap-Black", "search": "ridge cap-black", "price": 25.42}, {"name": "Ridge Cap-Charcoal", "search": "ridge cap-charcoal", "price": 25.42}, {"name": "Ridge Cap-Dark Brown", "search": "ridge cap-dark brown", "price": 25.42}, {"name": "Ridge Cap-Ebony Textured", "search": "ridge cap-ebony textured", "price": 27.87}, {"name": "Ridge Cap-Graphite Textured", "search": "ridge cap-graphite textured", "price": 27.87}, {"name": "Ridge Cap-Sepia Brown Textured", "search": "ridge cap-sepia brown textured", "price": 27.87}, {"name": "Ridge Drip-Black", "search": "ridge drip-black", "price": 20.86}, {"name": "Ridge Drip-Charcoal", "search": "ridge drip-charcoal", "price": 20.86}, {"name": "Ridge Drip-Dark Brown", "search": "ridge drip-dark brown", "price": 20.86}, {"name": "Ridge Drip-Ebony Textured", "search": "ridge drip-ebony textured", "price": 22.61}, {"name": "Ridge Drip-Graphite Textured", "search": "ridge drip-graphite textured", "price": 22.61}, {"name": "Ridge Drip-Sepia Brown Textured", "search": "ridge drip-sepia brown textured", "price": 22.61}, {"name": "Side Wall-Black", "search": "side wall-black", "price": 20.37}, {"name": "Side Wall-Charcoal", "search": "side wall-charcoal", "price": 20.37}, {"name": "Side Wall-Dark Brown", "search": "side wall-dark brown", "price": 20.37}, {"name": "Side Wall-Ebony Textured", "search": "side wall-ebony textured", "price": 22.13}, {"name": "Side Wall-Graphite Textured", "search": "side wall-graphite textured", "price": 22.13}, {"name": "Side Wall-Sepia Brown Textured", "search": "side wall-sepia brown textured", "price": 22.13}, {"name": "Siding Clip 2\"", "search": "siding clip 2\"", "price": 0.45}, {"name": "Snaplock 24g Ebony with Nail strip16\"", "search": "snaplock 24 gauge ebony with nail strip16\"", "price": 4.25}, {"name": "Snaplock 26g Black with Nail strip16\"", "search": "snaplock 26 gauge black with nail strip16\"", "price": 3.09}, {"name": "Snow Guard-Black", "search": "snow guard-black", "price": 14.94}, {"name": "Snow Guard-Charcoal", "search": "snow guard-charcoal", "price": 14.94}, {"name": "Snow Guard-Dark Brown", "search": "snow guard-dark brown", "price": 14.94}, {"name": "Snow Guard-Ebony Textured", "search": "snow guard-ebony textured", "price": 16.35}, {"name": "Snow Guard-Graphite Textured", "search": "snow guard-graphite textured", "price": 16.35}, {"name": "Snow Guard-Sepia Brown Textured", "search": "snow guard-sepia brown textured", "price": 16.35}, {"name": "Snow Guard Strong-Black", "search": "snow guard strong-black", "price": 28.35}, {"name": "Snow Guard Strong-Charcoal", "search": "snow guard strong-charcoal", "price": 28.35}, {"name": "Snow Guard Strong-Dark Brown", "search": "snow guard strong-dark brown", "price": 28.35}, {"name": "Snow Guard Strong-Ebony Textured", "search": "snow guard strong-ebony textured", "price": 30.8}, {"name": "Snow Guard Strong-Graphite Textured", "search": "snow guard strong-graphite textured", "price": 30.8}, {"name": "Snow Guard Strong-Sepia Brown Textured", "search": "snow guard strong-sepia brown textured", "price": 30.8}, {"name": "Stainless Steel snowguard (colormatch)", "search": "stainless steel snowguard (colormatch)", "price": 6.48}, {"name": "Standing Seam Black Chimney Back Pan", "search": "standing seam black chimney back pan", "price": 37.27}, {"name": "Standing Seam Black Chimney Kit with J, 3\" Face, 1\"", "search": "standing seam black chimney kit with j, 3\" face, 1\"", "price": 59.67}, {"name": "Standing Seam Black Chimney Kit with J, 3\" Face, 1-1/2\"", "search": "standing seam black chimney kit with j, 3\" face, 1-1/2\"", "price": 60.68}, {"name": "Standing Seam Black Chimney Kit with J, 3\" Face, 2\"", "search": "standing seam black chimney kit with j, 3\" face, 2\"", "price": 61.68}, {"name": "Standing Seam Black Chimney Kit with J, 5-1/4\" Face, 1\"", "search": "standing seam black chimney kit with j, 5-1/4\" face, 1\"", "price": 86.24}, {"name": "Standing Seam Black Chimney Kit with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam black chimney kit with j, 5-1/4\" face, 1-1/2\"", "price": 87.49}, {"name": "Standing Seam Black Chimney Kit with J, 5-1/4\" Face, 2\"", "search": "standing seam black chimney kit with j, 5-1/4\" face, 2\"", "price": 89.27}, {"name": "Standing Seam Black Chimney Kit with Step 1\"", "search": "standing seam black chimney kit with step 1\"", "price": 77.32}, {"name": "Standing Seam Black Chimney Kit with Step 1-1/2\"", "search": "standing seam black chimney kit with step 1-1/2\"", "price": 79.35}, {"name": "Standing Seam Black Chimney Kit with Step 2\"", "search": "standing seam black chimney kit with step 2\"", "price": 81.36}, {"name": "Standing Seam Black Chimney Kit with Z-Bar 1\"", "search": "standing seam black chimney kit with z-bar 1\"", "price": 79.17}, {"name": "Standing Seam Black Chimney Kit with Z-Bar 1-1/2\"", "search": "standing seam black chimney kit with z-bar 1-1/2\"", "price": 82.19}, {"name": "Standing Seam Black Chimney Kit with Z-Bar 2\"", "search": "standing seam black chimney kit with z-bar 2\"", "price": 85.21}, {"name": "Standing Seam Black End Wall", "search": "standing seam black end wall", "price": 22.11}, {"name": "Standing Seam Black End Wall with J 1\"", "search": "standing seam black end wall with j 1\"", "price": 40.7}, {"name": "Standing Seam Black End Wall with J 1-1/2\"", "search": "standing seam black end wall with j 1-1/2\"", "price": 41.72}, {"name": "Standing Seam Black End Wall with J 2\"", "search": "standing seam black end wall with j 2\"", "price": 42.71}, {"name": "Standing Seam Black Extended Eave 1\"", "search": "standing seam black extended eave 1\"", "price": 18.0}, {"name": "Standing Seam Black Extended Eave 2\"", "search": "standing seam black extended eave 2\"", "price": 19.53}, {"name": "Standing Seam Black Gable Cap 1\"", "search": "standing seam black gable cap 1\"", "price": 20.02}, {"name": "Standing Seam Black Gable Cap 1-1/2\"", "search": "standing seam black gable cap 1-1/2\"", "price": 22.03}, {"name": "Standing Seam Black Gable Cap 2\"", "search": "standing seam black gable cap 2\"", "price": 24.05}, {"name": "Standing Seam Black Gable Cap Cleat 1", "search": "standing seam black gable cap cleat 1", "price": 11.02}, {"name": "Standing Seam Black Gable Cap Cleat 2", "search": "standing seam black gable cap cleat 2", "price": 12.83}, {"name": "Standing Seam Black Gable Starter F 1\"", "search": "standing seam black gable starter f 1\"", "price": 27.03}, {"name": "Standing Seam Black Gable Starter F 1-1/2\"", "search": "standing seam black gable starter f 1-1/2\"", "price": 29.06}, {"name": "Standing Seam Black Gable Starter F 2\"", "search": "standing seam black gable starter f 2\"", "price": 31.06}, {"name": "Standing Seam Black Gable Starter F Cleat", "search": "standing seam black gable starter f cleat", "price": 8.23}, {"name": "Standing Seam Black Gambrel Flashing", "search": "standing seam black gambrel flashing", "price": 31.15}, {"name": "Standing Seam Black Gambrel Flashing with J 1\"", "search": "standing seam black gambrel flashing with j 1\"", "price": 51.76}, {"name": "Standing Seam Black Gambrel Flashing with J 1-1/2\"", "search": "standing seam black gambrel flashing with j 1-1/2\"", "price": 52.76}, {"name": "Standing Seam Black Gambrel Flashing with J 2\"", "search": "standing seam black gambrel flashing with j 2\"", "price": 53.77}, {"name": "Standing Seam Black Hip Cap 1\"", "search": "standing seam black hip cap 1\"", "price": 65.76}, {"name": "Standing Seam Black Hip Cap 1-1/2\"", "search": "standing seam black hip cap 1-1/2\"", "price": 67.78}, {"name": "Standing Seam Black Hip Cap 2\"", "search": "standing seam black hip cap 2\"", "price": 69.79}, {"name": "Standing Seam Black Pitch Change", "search": "standing seam black pitch change", "price": 31.64}, {"name": "Standing Seam Black Pitch Change with J 1\"", "search": "standing seam black pitch change with j 1\"", "price": 48.21}, {"name": "Standing Seam Black Pitch Change with J 1-1/2\"", "search": "standing seam black pitch change with j 1-1/2\"", "price": 49.21}, {"name": "Standing Seam Black Pitch Change with J 2\"", "search": "standing seam black pitch change with j 2\"", "price": 50.23}, {"name": "Standing Seam Black Ridge Cap", "search": "standing seam black ridge cap", "price": 32.61}, {"name": "Standing Seam Black Ridge Cap Flat", "search": "standing seam black ridge cap flat", "price": 24.62}, {"name": "Standing Seam Black Ridge Cap with J 1\"", "search": "standing seam black ridge cap with j 1\"", "price": 63.82}, {"name": "Standing Seam Black Ridge Cap with J 1-1/2\"", "search": "standing seam black ridge cap with j 1-1/2\"", "price": 65.84}, {"name": "Standing Seam Black Ridge Cap with J 2\"", "search": "standing seam black ridge cap with j 2\"", "price": 67.86}, {"name": "Standing Seam Black Ridge Drip", "search": "standing seam black ridge drip", "price": 27.12}, {"name": "Standing Seam Black Ridge Drip with J 1\"", "search": "standing seam black ridge drip with j 1\"", "price": 43.68}, {"name": "Standing Seam Black Ridge Drip with J 1-1/2\"", "search": "standing seam black ridge drip with j 1-1/2\"", "price": 44.7}, {"name": "Standing Seam Black Ridge Drip with J 2\"", "search": "standing seam black ridge drip with j 2\"", "price": 45.71}, {"name": "Standing Seam Black Side Wall", "search": "standing seam black side wall", "price": 22.11}, {"name": "Standing Seam Black Side Wall with J, 3\" Face, 1\"", "search": "standing seam black side wall with j, 3\" face, 1\"", "price": 37.65}, {"name": "Standing Seam Black Side Wall with J, 3\" Face, 1-1/2\"", "search": "standing seam black side wall with j, 3\" face, 1-1/2\"", "price": 38.65}, {"name": "Standing Seam Black Side Wall with J, 3\" Face, 2\"", "search": "standing seam black side wall with j, 3\" face, 2\"", "price": 39.65}, {"name": "Standing Seam Black Side Wall with J, 5-1/4\" Face, 1\"", "search": "standing seam black side wall with j, 5-1/4\" face, 1\"", "price": 41.68}, {"name": "Standing Seam Black Side Wall with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam black side wall with j, 5-1/4\" face, 1-1/2\"", "price": 42.69}, {"name": "Standing Seam Black Side Wall with J, 5-1/4\" Face, 2\"", "search": "standing seam black side wall with j, 5-1/4\" face, 2\"", "price": 43.68}, {"name": "Standing Seam Black Step Side Wall 1\"", "search": "standing seam black step side wall 1\"", "price": 22.07}, {"name": "Standing Seam Black Step Side Wall 1-1/2\"", "search": "standing seam black step side wall 1-1/2\"", "price": 23.09}, {"name": "Standing Seam Black Step Side Wall 2\"", "search": "standing seam black step side wall 2\"", "price": 24.08}, {"name": "Standing Seam Black V-Valley with Cleats", "search": "standing seam black v-valley with cleats", "price": 62.77}, {"name": "Standing Seam Black W-Valley with Cleats", "search": "standing seam black w-valley with cleats", "price": 63.75}, {"name": "Standing Seam Black Z-Bar 1\"", "search": "standing seam black z-bar 1\"", "price": 14.52}, {"name": "Standing Seam Black Z-Bar 1-1/2\"", "search": "standing seam black z-bar 1-1/2\"", "price": 16.55}, {"name": "Standing Seam Black Z-Bar 2\"", "search": "standing seam black z-bar 2\"", "price": 18.55}, {"name": "Standing Seam Charcoal Chimney Back Pan", "search": "standing seam charcoal chimney back pan", "price": 37.27}, {"name": "Standing Seam Charcoal Chimney Kit with J, 3\" Face, 1\"", "search": "standing seam charcoal chimney kit with j, 3\" face, 1\"", "price": 59.67}, {"name": "Standing Seam Charcoal Chimney Kit with J, 3\" Face, 1-1/2\"", "search": "standing seam charcoal chimney kit with j, 3\" face, 1-1/2\"", "price": 60.68}, {"name": "Standing Seam Charcoal Chimney Kit with J, 3\" Face, 2\"", "search": "standing seam charcoal chimney kit with j, 3\" face, 2\"", "price": 61.68}, {"name": "Standing Seam Charcoal Chimney Kit with J, 5-1/4\" Face, 1\"", "search": "standing seam charcoal chimney kit with j, 5-1/4\" face, 1\"", "price": 86.24}, {"name": "Standing Seam Charcoal Chimney Kit with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam charcoal chimney kit with j, 5-1/4\" face, 1-1/2\"", "price": 87.49}, {"name": "Standing Seam Charcoal Chimney Kit with J, 5-1/4\" Face, 2\"", "search": "standing seam charcoal chimney kit with j, 5-1/4\" face, 2\"", "price": 89.27}, {"name": "Standing Seam Charcoal Chimney Kit with Step 1\"", "search": "standing seam charcoal chimney kit with step 1\"", "price": 77.32}, {"name": "Standing Seam Charcoal Chimney Kit with Step 1-1/2\"", "search": "standing seam charcoal chimney kit with step 1-1/2\"", "price": 79.35}, {"name": "Standing Seam Charcoal Chimney Kit with Step 2\"", "search": "standing seam charcoal chimney kit with step 2\"", "price": 81.36}, {"name": "Standing Seam Charcoal Chimney Kit with Z-Bar 1\"", "search": "standing seam charcoal chimney kit with z-bar 1\"", "price": 79.17}, {"name": "Standing Seam Charcoal Chimney Kit with Z-Bar 1-1/2\"", "search": "standing seam charcoal chimney kit with z-bar 1-1/2\"", "price": 82.19}, {"name": "Standing Seam Charcoal Chimney Kit with Z-Bar 2\"", "search": "standing seam charcoal chimney kit with z-bar 2\"", "price": 85.21}, {"name": "Standing Seam Charcoal End Wall", "search": "standing seam charcoal end wall", "price": 22.11}, {"name": "Standing Seam Charcoal End Wall with J 1\"", "search": "standing seam charcoal end wall with j 1\"", "price": 40.7}, {"name": "Standing Seam Charcoal End Wall with J 1-1/2\"", "search": "standing seam charcoal end wall with j 1-1/2\"", "price": 41.72}, {"name": "Standing Seam Charcoal End Wall with J 2\"", "search": "standing seam charcoal end wall with j 2\"", "price": 42.71}, {"name": "Standing Seam Charcoal Extended Eave 1\"", "search": "standing seam charcoal extended eave 1\"", "price": 18.0}, {"name": "Standing Seam Charcoal Extended Eave 2\"", "search": "standing seam charcoal extended eave 2\"", "price": 19.53}, {"name": "Standing Seam Charcoal Gable Cap 1\"", "search": "standing seam charcoal gable cap 1\"", "price": 20.02}, {"name": "Standing Seam Charcoal Gable Cap 1-1/2\"", "search": "standing seam charcoal gable cap 1-1/2\"", "price": 22.03}, {"name": "Standing Seam Charcoal Gable Cap 2\"", "search": "standing seam charcoal gable cap 2\"", "price": 24.05}, {"name": "Standing Seam Charcoal Gable Cap Cleat 1", "search": "standing seam charcoal gable cap cleat 1", "price": 11.02}, {"name": "Standing Seam Charcoal Gable Cap Cleat 2", "search": "standing seam charcoal gable cap cleat 2", "price": 12.83}, {"name": "Standing Seam Charcoal Gable Starter F 1\"", "search": "standing seam charcoal gable starter f 1\"", "price": 27.03}, {"name": "Standing Seam Charcoal Gable Starter F 1-1/2\"", "search": "standing seam charcoal gable starter f 1-1/2\"", "price": 29.06}, {"name": "Standing Seam Charcoal Gable Starter F 2\"", "search": "standing seam charcoal gable starter f 2\"", "price": 31.06}, {"name": "Standing Seam Charcoal Gable Starter F Cleat", "search": "standing seam charcoal gable starter f cleat", "price": 8.23}, {"name": "Standing Seam Charcoal Gambrel Flashing", "search": "standing seam charcoal gambrel flashing", "price": 31.15}, {"name": "Standing Seam Charcoal Gambrel Flashing with J 1\"", "search": "standing seam charcoal gambrel flashing with j 1\"", "price": 51.76}, {"name": "Standing Seam Charcoal Gambrel Flashing with J 1-1/2\"", "search": "standing seam charcoal gambrel flashing with j 1-1/2\"", "price": 52.76}, {"name": "Standing Seam Charcoal Gambrel Flashing with J 2\"", "search": "standing seam charcoal gambrel flashing with j 2\"", "price": 53.77}, {"name": "Standing Seam Charcoal Hip Cap 1\"", "search": "standing seam charcoal hip cap 1\"", "price": 65.76}, {"name": "Standing Seam Charcoal Hip Cap 1-1/2\"", "search": "standing seam charcoal hip cap 1-1/2\"", "price": 67.78}, {"name": "Standing Seam Charcoal Hip Cap 2\"", "search": "standing seam charcoal hip cap 2\"", "price": 69.79}, {"name": "Standing Seam Charcoal Pitch Change", "search": "standing seam charcoal pitch change", "price": 31.64}, {"name": "Standing Seam Charcoal Pitch Change with J 1\"", "search": "standing seam charcoal pitch change with j 1\"", "price": 48.21}, {"name": "Standing Seam Charcoal Pitch Change with J 1-1/2\"", "search": "standing seam charcoal pitch change with j 1-1/2\"", "price": 49.21}, {"name": "Standing Seam Charcoal Pitch Change with J 2\"", "search": "standing seam charcoal pitch change with j 2\"", "price": 50.23}, {"name": "Standing Seam Charcoal Ridge Cap", "search": "standing seam charcoal ridge cap", "price": 32.61}, {"name": "Standing Seam Charcoal Ridge Cap Flat", "search": "standing seam charcoal ridge cap flat", "price": 24.62}, {"name": "Standing Seam Charcoal Ridge Cap with J 1\"", "search": "standing seam charcoal ridge cap with j 1\"", "price": 63.82}, {"name": "Standing Seam Charcoal Ridge Cap with J 1-1/2\"", "search": "standing seam charcoal ridge cap with j 1-1/2\"", "price": 65.84}, {"name": "Standing Seam Charcoal Ridge Cap with J 2\"", "search": "standing seam charcoal ridge cap with j 2\"", "price": 67.86}, {"name": "Standing Seam Charcoal Ridge Drip", "search": "standing seam charcoal ridge drip", "price": 27.12}, {"name": "Standing Seam Charcoal Ridge Drip with J 1\"", "search": "standing seam charcoal ridge drip with j 1\"", "price": 43.68}, {"name": "Standing Seam Charcoal Ridge Drip with J 1-1/2\"", "search": "standing seam charcoal ridge drip with j 1-1/2\"", "price": 44.7}, {"name": "Standing Seam Charcoal Ridge Drip with J 2\"", "search": "standing seam charcoal ridge drip with j 2\"", "price": 45.71}, {"name": "Standing Seam Charcoal Side Wall", "search": "standing seam charcoal side wall", "price": 22.11}, {"name": "Standing Seam Charcoal Side Wall with J, 3\" Face, 1\"", "search": "standing seam charcoal side wall with j, 3\" face, 1\"", "price": 37.65}, {"name": "Standing Seam Charcoal Side Wall with J, 3\" Face, 1-1/2\"", "search": "standing seam charcoal side wall with j, 3\" face, 1-1/2\"", "price": 38.65}, {"name": "Standing Seam Charcoal Side Wall with J, 3\" Face, 2\"", "search": "standing seam charcoal side wall with j, 3\" face, 2\"", "price": 39.65}, {"name": "Standing Seam Charcoal Side Wall with J, 5-1/4\" Face, 1\"", "search": "standing seam charcoal side wall with j, 5-1/4\" face, 1\"", "price": 41.68}, {"name": "Standing Seam Charcoal Side Wall with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam charcoal side wall with j, 5-1/4\" face, 1-1/2\"", "price": 42.69}, {"name": "Standing Seam Charcoal Side Wall with J, 5-1/4\" Face, 2\"", "search": "standing seam charcoal side wall with j, 5-1/4\" face, 2\"", "price": 43.68}, {"name": "Standing Seam Charcoal Step Side Wall 1\"", "search": "standing seam charcoal step side wall 1\"", "price": 22.07}, {"name": "Standing Seam Charcoal Step Side Wall 1-1/2\"", "search": "standing seam charcoal step side wall 1-1/2\"", "price": 23.09}, {"name": "Standing Seam Charcoal Step Side Wall 2\"", "search": "standing seam charcoal step side wall 2\"", "price": 24.08}, {"name": "Standing Seam Charcoal V-Valley with Cleats", "search": "standing seam charcoal v-valley with cleats", "price": 62.77}, {"name": "Standing Seam Charcoal W-Valley with Cleats", "search": "standing seam charcoal w-valley with cleats", "price": 63.75}, {"name": "Standing Seam Charcoal Z-Bar 1\"", "search": "standing seam charcoal z-bar 1\"", "price": 14.52}, {"name": "Standing Seam Charcoal Z-Bar 1-1/2\"", "search": "standing seam charcoal z-bar 1-1/2\"", "price": 16.55}, {"name": "Standing Seam Charcoal Z-Bar 2\"", "search": "standing seam charcoal z-bar 2\"", "price": 18.55}, {"name": "Standing Seam  Cleat", "search": "standing seam  cleat", "price": 7.39}, {"name": "Standing Seam Dark Brown Chimney Back Pan", "search": "standing seam dark brown chimney back pan", "price": 37.27}, {"name": "Standing Seam Dark Brown Chimney Kit with J, 3\" Face, 1\"", "search": "standing seam dark brown chimney kit with j, 3\" face, 1\"", "price": 59.67}, {"name": "Standing Seam Dark Brown Chimney Kit with J, 3\" Face, 1-1/2\"", "search": "standing seam dark brown chimney kit with j, 3\" face, 1-1/2\"", "price": 60.68}, {"name": "Standing Seam Dark Brown Chimney Kit with J, 3\" Face, 2\"", "search": "standing seam dark brown chimney kit with j, 3\" face, 2\"", "price": 61.68}, {"name": "Standing Seam Dark Brown Chimney Kit with J, 5-1/4\" Face, 1\"", "search": "standing seam dark brown chimney kit with j, 5-1/4\" face, 1\"", "price": 86.24}, {"name": "Standing Seam Dark Brown Chimney Kit with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam dark brown chimney kit with j, 5-1/4\" face, 1-1/2\"", "price": 87.49}, {"name": "Standing Seam Dark Brown Chimney Kit with J, 5-1/4\" Face, 2\"", "search": "standing seam dark brown chimney kit with j, 5-1/4\" face, 2\"", "price": 89.27}, {"name": "Standing Seam Dark Brown Chimney Kit with Step 1\"", "search": "standing seam dark brown chimney kit with step 1\"", "price": 77.32}, {"name": "Standing Seam Dark Brown Chimney Kit with Step 1-1/2\"", "search": "standing seam dark brown chimney kit with step 1-1/2\"", "price": 79.35}, {"name": "Standing Seam Dark Brown Chimney Kit with Step 2\"", "search": "standing seam dark brown chimney kit with step 2\"", "price": 81.36}, {"name": "Standing Seam Dark Brown Chimney Kit with Z-Bar 1\"", "search": "standing seam dark brown chimney kit with z-bar 1\"", "price": 79.17}, {"name": "Standing Seam Dark Brown Chimney Kit with Z-Bar 1-1/2\"", "search": "standing seam dark brown chimney kit with z-bar 1-1/2\"", "price": 82.19}, {"name": "Standing Seam Dark Brown Chimney Kit with Z-Bar 2\"", "search": "standing seam dark brown chimney kit with z-bar 2\"", "price": 85.21}, {"name": "Standing Seam Dark Brown End Wall", "search": "standing seam dark brown end wall", "price": 22.11}, {"name": "Standing Seam Dark Brown End Wall with J 1\"", "search": "standing seam dark brown end wall with j 1\"", "price": 40.7}, {"name": "Standing Seam Dark Brown End Wall with J 1-1/2\"", "search": "standing seam dark brown end wall with j 1-1/2\"", "price": 41.72}, {"name": "Standing Seam Dark Brown End Wall with J 2\"", "search": "standing seam dark brown end wall with j 2\"", "price": 42.71}, {"name": "Standing Seam Dark Brown Extended Eave 1\"", "search": "standing seam dark brown extended eave 1\"", "price": 18.0}, {"name": "Standing Seam Dark Brown Extended Eave 2\"", "search": "standing seam dark brown extended eave 2\"", "price": 19.53}, {"name": "Standing Seam Dark Brown Gable Cap 1\"", "search": "standing seam dark brown gable cap 1\"", "price": 20.02}, {"name": "Standing Seam Dark Brown Gable Cap 1-1/2\"", "search": "standing seam dark brown gable cap 1-1/2\"", "price": 22.03}, {"name": "Standing Seam Dark Brown Gable Cap 2\"", "search": "standing seam dark brown gable cap 2\"", "price": 24.05}, {"name": "Standing Seam Dark Brown Gable Cap Cleat 1", "search": "standing seam dark brown gable cap cleat 1", "price": 11.02}, {"name": "Standing Seam Dark Brown Gable Cap Cleat 2", "search": "standing seam dark brown gable cap cleat 2", "price": 12.83}, {"name": "Standing Seam Dark Brown Gable Starter F 1\"", "search": "standing seam dark brown gable starter f 1\"", "price": 27.03}, {"name": "Standing Seam Dark Brown Gable Starter F 1-1/2\"", "search": "standing seam dark brown gable starter f 1-1/2\"", "price": 29.06}, {"name": "Standing Seam Dark Brown Gable Starter F 2\"", "search": "standing seam dark brown gable starter f 2\"", "price": 31.06}, {"name": "Standing Seam Dark Brown Gable Starter F Cleat", "search": "standing seam dark brown gable starter f cleat", "price": 8.23}, {"name": "Standing Seam Dark Brown Gambrel Flashing", "search": "standing seam dark brown gambrel flashing", "price": 31.15}, {"name": "Standing Seam Dark Brown Gambrel Flashing with J 1\"", "search": "standing seam dark brown gambrel flashing with j 1\"", "price": 51.76}, {"name": "Standing Seam Dark Brown Gambrel Flashing with J 1-1/2\"", "search": "standing seam dark brown gambrel flashing with j 1-1/2\"", "price": 52.76}, {"name": "Standing Seam Dark Brown Gambrel Flashing with J 2\"", "search": "standing seam dark brown gambrel flashing with j 2\"", "price": 53.77}, {"name": "Standing Seam Dark Brown Hip Cap 1\"", "search": "standing seam dark brown hip cap 1\"", "price": 65.76}, {"name": "Standing Seam Dark Brown Hip Cap 1-1/2\"", "search": "standing seam dark brown hip cap 1-1/2\"", "price": 67.78}, {"name": "Standing Seam Dark Brown Hip Cap 2\"", "search": "standing seam dark brown hip cap 2\"", "price": 69.79}, {"name": "Standing Seam Dark Brown Pitch Change", "search": "standing seam dark brown pitch change", "price": 31.64}, {"name": "Standing Seam Dark Brown Pitch Change with J 1\"", "search": "standing seam dark brown pitch change with j 1\"", "price": 48.21}, {"name": "Standing Seam Dark Brown Pitch Change with J 1-1/2\"", "search": "standing seam dark brown pitch change with j 1-1/2\"", "price": 49.21}, {"name": "Standing Seam Dark Brown Pitch Change with J 2\"", "search": "standing seam dark brown pitch change with j 2\"", "price": 50.23}, {"name": "Standing Seam Dark Brown Ridge Cap", "search": "standing seam dark brown ridge cap", "price": 32.61}, {"name": "Standing Seam Dark Brown Ridge Cap Flat", "search": "standing seam dark brown ridge cap flat", "price": 24.62}, {"name": "Standing Seam Dark Brown Ridge Cap with J 1\"", "search": "standing seam dark brown ridge cap with j 1\"", "price": 63.82}, {"name": "Standing Seam Dark Brown Ridge Cap with J 1-1/2\"", "search": "standing seam dark brown ridge cap with j 1-1/2\"", "price": 65.84}, {"name": "Standing Seam Dark Brown Ridge Cap with J 2\"", "search": "standing seam dark brown ridge cap with j 2\"", "price": 67.86}, {"name": "Standing Seam Dark Brown Ridge Drip", "search": "standing seam dark brown ridge drip", "price": 27.12}, {"name": "Standing Seam Dark Brown Ridge Drip with J 1\"", "search": "standing seam dark brown ridge drip with j 1\"", "price": 43.68}, {"name": "Standing Seam Dark Brown Ridge Drip with J 1-1/2\"", "search": "standing seam dark brown ridge drip with j 1-1/2\"", "price": 44.7}, {"name": "Standing Seam Dark Brown Ridge Drip with J 2\"", "search": "standing seam dark brown ridge drip with j 2\"", "price": 45.71}, {"name": "Standing Seam Dark Brown Side Wall", "search": "standing seam dark brown side wall", "price": 22.11}, {"name": "Standing Seam Dark Brown Side Wall with J, 3\" Face, 1\"", "search": "standing seam dark brown side wall with j, 3\" face, 1\"", "price": 37.65}, {"name": "Standing Seam Dark Brown Side Wall with J, 3\" Face, 1-1/2\"", "search": "standing seam dark brown side wall with j, 3\" face, 1-1/2\"", "price": 38.65}, {"name": "Standing Seam Dark Brown Side Wall with J, 3\" Face, 2\"", "search": "standing seam dark brown side wall with j, 3\" face, 2\"", "price": 39.65}, {"name": "Standing Seam Dark Brown Side Wall with J, 5-1/4\" Face, 1\"", "search": "standing seam dark brown side wall with j, 5-1/4\" face, 1\"", "price": 41.68}, {"name": "Standing Seam Dark Brown Side Wall with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam dark brown side wall with j, 5-1/4\" face, 1-1/2\"", "price": 42.69}, {"name": "Standing Seam Dark Brown Side Wall with J, 5-1/4\" Face, 2\"", "search": "standing seam dark brown side wall with j, 5-1/4\" face, 2\"", "price": 43.68}, {"name": "Standing Seam Dark Brown Step Side Wall 1\"", "search": "standing seam dark brown step side wall 1\"", "price": 22.07}, {"name": "Standing Seam Dark Brown Step Side Wall 1-1/2\"", "search": "standing seam dark brown step side wall 1-1/2\"", "price": 23.09}, {"name": "Standing Seam Dark Brown Step Side Wall 2\"", "search": "standing seam dark brown step side wall 2\"", "price": 24.08}, {"name": "Standing Seam Dark Brown V-Valley with Cleats", "search": "standing seam dark brown v-valley with cleats", "price": 62.77}, {"name": "Standing Seam Dark Brown W-Valley with Cleats", "search": "standing seam dark brown w-valley with cleats", "price": 63.75}, {"name": "Standing Seam Dark Brown Z-Bar 1\"", "search": "standing seam dark brown z-bar 1\"", "price": 14.52}, {"name": "Standing Seam Dark Brown Z-Bar 1-1/2\"", "search": "standing seam dark brown z-bar 1-1/2\"", "price": 16.55}, {"name": "Standing Seam Dark Brown Z-Bar 2\"", "search": "standing seam dark brown z-bar 2\"", "price": 18.55}, {"name": "Standing Seam Ebony Chimney Back Pan", "search": "standing seam ebony chimney back pan", "price": 40.9}, {"name": "Standing Seam Ebony Chimney Kit with J, 3\" Face, 1\"", "search": "standing seam ebony chimney kit with j, 3\" face, 1\"", "price": 64.81}, {"name": "Standing Seam Ebony Chimney Kit with J, 3\" Face, 1-1/2\"", "search": "standing seam ebony chimney kit with j, 3\" face, 1-1/2\"", "price": 65.93}, {"name": "Standing Seam Ebony Chimney Kit with J, 3\" Face, 2\"", "search": "standing seam ebony chimney kit with j, 3\" face, 2\"", "price": 67.04}, {"name": "Standing Seam Ebony Chimney Kit with J, 5-1/4\" Face, 1\"", "search": "standing seam ebony chimney kit with j, 5-1/4\" face, 1\"", "price": 93.65}, {"name": "Standing Seam Ebony Chimney Kit with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam ebony chimney kit with j, 5-1/4\" face, 1-1/2\"", "price": 95.31}, {"name": "Standing Seam Ebony Chimney Kit with J, 5-1/4\" Face, 2\"", "search": "standing seam ebony chimney kit with j, 5-1/4\" face, 2\"", "price": 96.98}, {"name": "Standing Seam Ebony Chimney Kit with Step 1\"", "search": "standing seam ebony chimney kit with step 1\"", "price": 82.69}, {"name": "Standing Seam Ebony Chimney Kit with Step 1-1/2\"", "search": "standing seam ebony chimney kit with step 1-1/2\"", "price": 84.88}, {"name": "Standing Seam Ebony Chimney Kit with Step 2\"", "search": "standing seam ebony chimney kit with step 2\"", "price": 87.11}, {"name": "Standing Seam Ebony Chimney Kit with Z-Bar 1\"", "search": "standing seam ebony chimney kit with z-bar 1\"", "price": 85.82}, {"name": "Standing Seam Ebony Chimney Kit with Z-Bar 1-1/2\"", "search": "standing seam ebony chimney kit with z-bar 1-1/2\"", "price": 89.15}, {"name": "Standing Seam Ebony Chimney Kit with Z-Bar 2\"", "search": "standing seam ebony chimney kit with z-bar 2\"", "price": 92.48}, {"name": "Standing Seam Ebony End Wall", "search": "standing seam ebony end wall", "price": 24.12}, {"name": "Standing Seam Ebony End Wall with J 1\"", "search": "standing seam ebony end wall with j 1\"", "price": 44.44}, {"name": "Standing Seam Ebony End Wall with J 1-1/2\"", "search": "standing seam ebony end wall with j 1-1/2\"", "price": 45.54}, {"name": "Standing Seam Ebony End Wall with J 2\"", "search": "standing seam ebony end wall with j 2\"", "price": 46.66}, {"name": "Standing Seam Ebony Extended Eave 1\"", "search": "standing seam ebony extended eave 1\"", "price": 19.41}, {"name": "Standing Seam Ebony Extended Eave 2\"", "search": "standing seam ebony extended eave 2\"", "price": 21.14}, {"name": "Standing Seam Ebony Gable Cap 1\"", "search": "standing seam ebony gable cap 1\"", "price": 21.64}, {"name": "Standing Seam Ebony Gable Cap 1-1/2\"", "search": "standing seam ebony gable cap 1-1/2\"", "price": 23.84}, {"name": "Standing Seam Ebony Gable Cap 2\"", "search": "standing seam ebony gable cap 2\"", "price": 26.08}, {"name": "Standing Seam Ebony Gable Cap Cleat 1", "search": "standing seam ebony gable cap cleat 1", "price": 11.02}, {"name": "Standing Seam Ebony Gable Cap Cleat 2", "search": "standing seam ebony gable cap cleat 2", "price": 12.83}, {"name": "Standing Seam Ebony Gable Starter F 1\"", "search": "standing seam ebony gable starter f 1\"", "price": 29.27}, {"name": "Standing Seam Ebony Gable Starter F 1-1/2\"", "search": "standing seam ebony gable starter f 1-1/2\"", "price": 31.47}, {"name": "Standing Seam Ebony Gable Starter F 2\"", "search": "standing seam ebony gable starter f 2\"", "price": 46.44}, {"name": "Standing Seam Ebony Gable Starter F Cleat", "search": "standing seam ebony gable starter f cleat", "price": 8.23}, {"name": "Standing Seam Ebony Gambrel Flashing", "search": "standing seam ebony gambrel flashing", "price": 33.97}, {"name": "Standing Seam Ebony Gambrel Flashing with J 1\"", "search": "standing seam ebony gambrel flashing with j 1\"", "price": 56.5}, {"name": "Standing Seam Ebony Gambrel Flashing with J 1-1/2\"", "search": "standing seam ebony gambrel flashing with j 1-1/2\"", "price": 57.6}, {"name": "Standing Seam Ebony Gambrel Flashing with J 2\"", "search": "standing seam ebony gambrel flashing with j 2\"", "price": 58.72}, {"name": "Standing Seam Ebony Hip Cap 1\"", "search": "standing seam ebony hip cap 1\"", "price": 71.6}, {"name": "Standing Seam Ebony Hip Cap 1-1/2\"", "search": "standing seam ebony hip cap 1-1/2\"", "price": 73.82}, {"name": "Standing Seam Ebony Hip Cap 2\"", "search": "standing seam ebony hip cap 2\"", "price": 76.04}, {"name": "Standing Seam Ebony Pitch Change", "search": "standing seam ebony pitch change", "price": 34.45}, {"name": "Standing Seam Ebony Pitch Change with J 1\"", "search": "standing seam ebony pitch change with j 1\"", "price": 52.55}, {"name": "Standing Seam Ebony Pitch Change with J 1-1/2\"", "search": "standing seam ebony pitch change with j 1-1/2\"", "price": 53.65}, {"name": "Standing Seam Ebony Pitch Change with J 2\"", "search": "standing seam ebony pitch change with j 2\"", "price": 54.77}, {"name": "Standing Seam Ebony Ridge Cap", "search": "standing seam ebony ridge cap", "price": 35.42}, {"name": "Standing Seam Ebony Ridge Cap Flat", "search": "standing seam ebony ridge cap flat", "price": 26.83}, {"name": "Standing Seam Ebony Ridge Cap with J 1\"", "search": "standing seam ebony ridge cap with j 1\"", "price": 69.67}, {"name": "Standing Seam Ebony Ridge Cap with J 1-1/2\"", "search": "standing seam ebony ridge cap with j 1-1/2\"", "price": 71.88}, {"name": "Standing Seam Ebony Ridge Cap with J 2\"", "search": "standing seam ebony ridge cap with j 2\"", "price": 74.1}, {"name": "Standing Seam Ebony Ridge Drip", "search": "standing seam ebony ridge drip", "price": 29.53}, {"name": "Standing Seam Ebony Ridge Drip with J 1\"", "search": "standing seam ebony ridge drip with j 1\"", "price": 47.63}, {"name": "Standing Seam Ebony Ridge Drip with J 1-1/2\"", "search": "standing seam ebony ridge drip with j 1-1/2\"", "price": 48.73}, {"name": "Standing Seam Ebony Ridge Drip with J 2\"", "search": "standing seam ebony ridge drip with j 2\"", "price": 49.84}, {"name": "Standing Seam Ebony Side Wall", "search": "standing seam ebony side wall", "price": 24.12}, {"name": "Standing Seam Ebony Side Wall with J, 3\" Face, 1\"", "search": "standing seam ebony side wall with j, 3\" face, 1\"", "price": 40.97}, {"name": "Standing Seam Ebony Side Wall with J, 3\" Face, 1-1/2\"", "search": "standing seam ebony side wall with j, 3\" face, 1-1/2\"", "price": 42.07}, {"name": "Standing Seam Ebony Side Wall with J, 3\" Face, 2\"", "search": "standing seam ebony side wall with j, 3\" face, 2\"", "price": 43.2}, {"name": "Standing Seam Ebony Side Wall with J, 5-1/4\" Face, 1\"", "search": "standing seam ebony side wall with j, 5-1/4\" face, 1\"", "price": 45.39}, {"name": "Standing Seam Ebony Side Wall with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam ebony side wall with j, 5-1/4\" face, 1-1/2\"", "price": 46.53}, {"name": "Standing Seam Ebony Side Wall with J, 5-1/4\" Face, 2\"", "search": "standing seam ebony side wall with j, 5-1/4\" face, 2\"", "price": 47.62}, {"name": "Standing Seam Ebony Step Side Wall 1\"", "search": "standing seam ebony step side wall 1\"", "price": 23.98}, {"name": "Standing Seam Ebony Step Side Wall 1-1/2\"", "search": "standing seam ebony step side wall 1-1/2\"", "price": 25.09}, {"name": "Standing Seam Ebony Step Side Wall 2\"", "search": "standing seam ebony step side wall 2\"", "price": 26.2}, {"name": "Standing Seam Ebony V-Valley with Cleats", "search": "standing seam ebony v-valley with cleats", "price": 68.43}, {"name": "Standing Seam Ebony W-Valley with Cleats", "search": "standing seam ebony w-valley with cleats", "price": 69.39}, {"name": "Standing Seam Ebony Z-Bar 1\"", "search": "standing seam ebony z-bar 1\"", "price": 15.75}, {"name": "Standing Seam Ebony Z-Bar 1-1/2\"", "search": "standing seam ebony z-bar 1-1/2\"", "price": 17.95}, {"name": "Standing Seam Ebony Z-Bar 2\"", "search": "standing seam ebony z-bar 2\"", "price": 20.17}, {"name": "Standing Seam Graphite grey Chimney Back Pan", "search": "standing seam graphite grey chimney back pan", "price": 40.9}, {"name": "Standing Seam Graphite grey Chimney Kit with J, 3\" Face, 1\"", "search": "standing seam graphite grey chimney kit with j, 3\" face, 1\"", "price": 64.81}, {"name": "Standing Seam Graphite grey Chimney Kit with J, 3\" Face, 1-1/2\"", "search": "standing seam graphite grey chimney kit with j, 3\" face, 1-1/2\"", "price": 65.93}, {"name": "Standing Seam Graphite grey Chimney Kit with J, 3\" Face, 2\"", "search": "standing seam graphite grey chimney kit with j, 3\" face, 2\"", "price": 67.04}, {"name": "Standing Seam Graphite grey Chimney Kit with J, 5-1/4\" Face, 1\"", "search": "standing seam graphite grey chimney kit with j, 5-1/4\" face, 1\"", "price": 93.65}, {"name": "Standing Seam Graphite grey Chimney Kit with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam graphite grey chimney kit with j, 5-1/4\" face, 1-1/2\"", "price": 95.31}, {"name": "Standing Seam Graphite grey Chimney Kit with J, 5-1/4\" Face, 2\"", "search": "standing seam graphite grey chimney kit with j, 5-1/4\" face, 2\"", "price": 96.98}, {"name": "Standing Seam Graphite grey Chimney Kit with Step 1\"", "search": "standing seam graphite grey chimney kit with step 1\"", "price": 82.69}, {"name": "Standing Seam Graphite grey Chimney Kit with Step 1-1/2\"", "search": "standing seam graphite grey chimney kit with step 1-1/2\"", "price": 84.88}, {"name": "Standing Seam Graphite grey Chimney Kit with Step 2\"", "search": "standing seam graphite grey chimney kit with step 2\"", "price": 87.11}, {"name": "Standing Seam Graphite grey Chimney Kit with Z-Bar 1\"", "search": "standing seam graphite grey chimney kit with z-bar 1\"", "price": 85.82}, {"name": "Standing Seam Graphite grey Chimney Kit with Z-Bar 1-1/2\"", "search": "standing seam graphite grey chimney kit with z-bar 1-1/2\"", "price": 89.15}, {"name": "Standing Seam Graphite grey Chimney Kit with Z-Bar 2\"", "search": "standing seam graphite grey chimney kit with z-bar 2\"", "price": 92.48}, {"name": "Standing Seam Graphite grey End Wall", "search": "standing seam graphite grey end wall", "price": 24.12}, {"name": "Standing Seam Graphite grey End Wall with J 1\"", "search": "standing seam graphite grey end wall with j 1\"", "price": 44.44}, {"name": "Standing Seam Graphite grey End Wall with J 1-1/2\"", "search": "standing seam graphite grey end wall with j 1-1/2\"", "price": 45.54}, {"name": "Standing Seam Graphite grey End Wall with J 2\"", "search": "standing seam graphite grey end wall with j 2\"", "price": 46.66}, {"name": "Standing Seam Graphite grey Extended Eave 1\"", "search": "standing seam graphite grey extended eave 1\"", "price": 19.41}, {"name": "Standing Seam Graphite grey Extended Eave 2\"", "search": "standing seam graphite grey extended eave 2\"", "price": 21.14}, {"name": "Standing Seam Graphite grey Gable Cap 1\"", "search": "standing seam graphite grey gable cap 1\"", "price": 21.64}, {"name": "Standing Seam Graphite grey Gable Cap 1-1/2\"", "search": "standing seam graphite grey gable cap 1-1/2\"", "price": 23.84}, {"name": "Standing Seam Graphite grey Gable Cap 2\"", "search": "standing seam graphite grey gable cap 2\"", "price": 26.08}, {"name": "Standing Seam Graphite grey Gable Cap Cleat 1", "search": "standing seam graphite grey gable cap cleat 1", "price": 11.02}, {"name": "Standing Seam Graphite grey Gable Cap Cleat 2", "search": "standing seam graphite grey gable cap cleat 2", "price": 12.83}, {"name": "Standing Seam Graphite grey Gable Starter F 1\"", "search": "standing seam graphite grey gable starter f 1\"", "price": 29.27}, {"name": "Standing Seam Graphite grey Gable Starter F 1-1/2\"", "search": "standing seam graphite grey gable starter f 1-1/2\"", "price": 31.47}, {"name": "Standing Seam Graphite grey Gable Starter F 2\"", "search": "standing seam graphite grey gable starter f 2\"", "price": 46.44}, {"name": "Standing Seam Graphite grey Gable Starter F Cleat", "search": "standing seam graphite grey gable starter f cleat", "price": 8.23}, {"name": "Standing Seam Graphite grey Gambrel Flashing", "search": "standing seam graphite grey gambrel flashing", "price": 33.97}, {"name": "Standing Seam Graphite grey Gambrel Flashing with J 1\"", "search": "standing seam graphite grey gambrel flashing with j 1\"", "price": 56.5}, {"name": "Standing Seam Graphite grey Gambrel Flashing with J 1-1/2\"", "search": "standing seam graphite grey gambrel flashing with j 1-1/2\"", "price": 57.6}, {"name": "Standing Seam Graphite grey Gambrel Flashing with J 2\"", "search": "standing seam graphite grey gambrel flashing with j 2\"", "price": 58.72}, {"name": "Standing Seam Graphite grey Hip Cap 1\"", "search": "standing seam graphite grey hip cap 1\"", "price": 71.6}, {"name": "Standing Seam Graphite grey Hip Cap 1-1/2\"", "search": "standing seam graphite grey hip cap 1-1/2\"", "price": 73.82}, {"name": "Standing Seam Graphite grey Hip Cap 2\"", "search": "standing seam graphite grey hip cap 2\"", "price": 76.04}, {"name": "Standing Seam Graphite grey Pitch Change", "search": "standing seam graphite grey pitch change", "price": 34.45}, {"name": "Standing Seam Graphite grey Pitch Change with J 1\"", "search": "standing seam graphite grey pitch change with j 1\"", "price": 52.55}, {"name": "Standing Seam Graphite grey Pitch Change with J 1-1/2\"", "search": "standing seam graphite grey pitch change with j 1-1/2\"", "price": 53.65}, {"name": "Standing Seam Graphite grey Pitch Change with J 2\"", "search": "standing seam graphite grey pitch change with j 2\"", "price": 54.77}, {"name": "Standing Seam Graphite grey Ridge Cap", "search": "standing seam graphite grey ridge cap", "price": 35.42}, {"name": "Standing Seam Graphite grey Ridge Cap Flat", "search": "standing seam graphite grey ridge cap flat", "price": 26.83}, {"name": "Standing Seam Graphite grey Ridge Cap with J 1\"", "search": "standing seam graphite grey ridge cap with j 1\"", "price": 69.67}, {"name": "Standing Seam Graphite grey Ridge Cap with J 1-1/2\"", "search": "standing seam graphite grey ridge cap with j 1-1/2\"", "price": 71.88}, {"name": "Standing Seam Graphite grey Ridge Cap with J 2\"", "search": "standing seam graphite grey ridge cap with j 2\"", "price": 74.1}, {"name": "Standing Seam Graphite grey Ridge Drip", "search": "standing seam graphite grey ridge drip", "price": 29.53}, {"name": "Standing Seam Graphite grey Ridge Drip with J 1\"", "search": "standing seam graphite grey ridge drip with j 1\"", "price": 47.63}, {"name": "Standing Seam Graphite grey Ridge Drip with J 1-1/2\"", "search": "standing seam graphite grey ridge drip with j 1-1/2\"", "price": 48.73}, {"name": "Standing Seam Graphite grey Ridge Drip with J 2\"", "search": "standing seam graphite grey ridge drip with j 2\"", "price": 49.84}, {"name": "Standing Seam Graphite grey Side Wall", "search": "standing seam graphite grey side wall", "price": 24.12}, {"name": "Standing Seam Graphite grey Side Wall with J, 3\" Face, 1\"", "search": "standing seam graphite grey side wall with j, 3\" face, 1\"", "price": 40.97}, {"name": "Standing Seam Graphite grey Side Wall with J, 3\" Face, 1-1/2\"", "search": "standing seam graphite grey side wall with j, 3\" face, 1-1/2\"", "price": 42.07}, {"name": "Standing Seam Graphite grey Side Wall with J, 3\" Face, 2\"", "search": "standing seam graphite grey side wall with j, 3\" face, 2\"", "price": 43.2}, {"name": "Standing Seam Graphite grey Side Wall with J, 5-1/4\" Face, 1\"", "search": "standing seam graphite grey side wall with j, 5-1/4\" face, 1\"", "price": 45.39}, {"name": "Standing Seam Graphite grey Side Wall with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam graphite grey side wall with j, 5-1/4\" face, 1-1/2\"", "price": 46.52}, {"name": "Standing Seam Graphite grey Side Wall with J, 5-1/4\" Face, 2\"", "search": "standing seam graphite grey side wall with j, 5-1/4\" face, 2\"", "price": 47.62}, {"name": "Standing Seam Graphite grey Step Side Wall 1\"", "search": "standing seam graphite grey step side wall 1\"", "price": 23.98}, {"name": "Standing Seam Graphite grey Step Side Wall 1-1/2\"", "search": "standing seam graphite grey step side wall 1-1/2\"", "price": 25.09}, {"name": "Standing Seam Graphite grey Step Side Wall 2\"", "search": "standing seam graphite grey step side wall 2\"", "price": 26.2}, {"name": "Standing Seam Graphite grey V-Valley with Cleats", "search": "standing seam graphite grey v-valley with cleats", "price": 68.43}, {"name": "Standing Seam Graphite grey W-Valley with Cleats", "search": "standing seam graphite grey w-valley with cleats", "price": 69.39}, {"name": "Standing Seam Graphite grey Z-Bar 1\"", "search": "standing seam graphite grey z-bar 1\"", "price": 15.75}, {"name": "Standing Seam Graphite grey Z-Bar 1-1/2\"", "search": "standing seam graphite grey z-bar 1-1/2\"", "price": 17.95}, {"name": "Standing Seam Graphite grey Z-Bar 2\"", "search": "standing seam graphite grey z-bar 2\"", "price": 20.17}, {"name": "Standing Seam Melchers Green Extended Eave 1\"", "search": "standing seam melchers green extended eave 1\"", "price": 18.0}, {"name": "Standing Seam Melchers Green Gable Starter F 1-1/2\"", "search": "standing seam melchers green gable starter f 1-1/2\"", "price": 29.06}, {"name": "Standing Seam Melchers Green Ridge Cap Flat", "search": "standing seam melchers green ridge cap flat", "price": 24.62}, {"name": "Standing Seam Melchers Green Side Wall", "search": "standing seam melchers green side wall", "price": 22.11}, {"name": "Standing Seam Melchers Green Z-Bar 1-1/2\"", "search": "standing seam melchers green z-bar 1-1/2\"", "price": 16.55}, {"name": "Standing Seam  Ridge Drip Edge Cleat", "search": "standing seam  ridge drip edge cleat", "price": 5.93}, {"name": "Standing Seam Sepia Brown Chimney Back Pan", "search": "standing seam sepia brown chimney back pan", "price": 40.9}, {"name": "Standing Seam Sepia Brown Chimney Kit with J, 3\" Face, 1\"", "search": "standing seam sepia brown chimney kit with j, 3\" face, 1\"", "price": 64.81}, {"name": "Standing Seam Sepia Brown Chimney Kit with J, 3\" Face, 1-1/2\"", "search": "standing seam sepia brown chimney kit with j, 3\" face, 1-1/2\"", "price": 65.93}, {"name": "Standing Seam Sepia Brown Chimney Kit with J, 3\" Face, 2\"", "search": "standing seam sepia brown chimney kit with j, 3\" face, 2\"", "price": 67.04}, {"name": "Standing Seam Sepia Brown Chimney Kit with J, 5-1/4\" Face, 1\"", "search": "standing seam sepia brown chimney kit with j, 5-1/4\" face, 1\"", "price": 93.65}, {"name": "Standing Seam Sepia Brown Chimney Kit with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam sepia brown chimney kit with j, 5-1/4\" face, 1-1/2\"", "price": 95.31}, {"name": "Standing Seam Sepia Brown Chimney Kit with J, 5-1/4\" Face, 2\"", "search": "standing seam sepia brown chimney kit with j, 5-1/4\" face, 2\"", "price": 96.98}, {"name": "Standing Seam Sepia Brown Chimney Kit with Step 1\"", "search": "standing seam sepia brown chimney kit with step 1\"", "price": 82.69}, {"name": "Standing Seam Sepia Brown Chimney Kit with Step 1-1/2\"", "search": "standing seam sepia brown chimney kit with step 1-1/2\"", "price": 84.88}, {"name": "Standing Seam Sepia Brown Chimney Kit with Step 2\"", "search": "standing seam sepia brown chimney kit with step 2\"", "price": 87.11}, {"name": "Standing Seam Sepia Brown Chimney Kit with Z-Bar 1\"", "search": "standing seam sepia brown chimney kit with z-bar 1\"", "price": 85.82}, {"name": "Standing Seam Sepia Brown Chimney Kit with Z-Bar 1-1/2\"", "search": "standing seam sepia brown chimney kit with z-bar 1-1/2\"", "price": 89.15}, {"name": "Standing Seam Sepia Brown Chimney Kit with Z-Bar 2\"", "search": "standing seam sepia brown chimney kit with z-bar 2\"", "price": 92.48}, {"name": "Standing Seam Sepia Brown End Wall", "search": "standing seam sepia brown end wall", "price": 24.12}, {"name": "Standing Seam Sepia Brown End Wall with J 1\"", "search": "standing seam sepia brown end wall with j 1\"", "price": 44.44}, {"name": "Standing Seam Sepia Brown End Wall with J 1-1/2\"", "search": "standing seam sepia brown end wall with j 1-1/2\"", "price": 45.54}, {"name": "Standing Seam Sepia Brown End Wall with J 2\"", "search": "standing seam sepia brown end wall with j 2\"", "price": 46.66}, {"name": "Standing Seam Sepia Brown Extended Eave 1\"", "search": "standing seam sepia brown extended eave 1\"", "price": 19.41}, {"name": "Standing Seam Sepia Brown Extended Eave 2\"", "search": "standing seam sepia brown extended eave 2\"", "price": 21.14}, {"name": "Standing Seam Sepia Brown Gable Cap 1\"", "search": "standing seam sepia brown gable cap 1\"", "price": 21.64}, {"name": "Standing Seam Sepia Brown Gable Cap 1-1/2\"", "search": "standing seam sepia brown gable cap 1-1/2\"", "price": 23.84}, {"name": "Standing Seam Sepia Brown Gable Cap 2\"", "search": "standing seam sepia brown gable cap 2\"", "price": 26.08}, {"name": "Standing Seam Sepia Brown Gable Cap Cleat 1", "search": "standing seam sepia brown gable cap cleat 1", "price": 11.02}, {"name": "Standing Seam Sepia Brown Gable Cap Cleat 2", "search": "standing seam sepia brown gable cap cleat 2", "price": 12.83}, {"name": "Standing Seam Sepia Brown Gable Starter F 1\"", "search": "standing seam sepia brown gable starter f 1\"", "price": 29.27}, {"name": "Standing Seam Sepia Brown Gable Starter F 1-1/2\"", "search": "standing seam sepia brown gable starter f 1-1/2\"", "price": 31.47}, {"name": "Standing Seam Sepia Brown Gable Starter F 2\"", "search": "standing seam sepia brown gable starter f 2\"", "price": 46.44}, {"name": "Standing Seam Sepia Brown Gable Starter F Cleat", "search": "standing seam sepia brown gable starter f cleat", "price": 8.23}, {"name": "Standing Seam Sepia Brown Gambrel Flashing", "search": "standing seam sepia brown gambrel flashing", "price": 33.97}, {"name": "Standing Seam Sepia Brown Gambrel Flashing with J 1\"", "search": "standing seam sepia brown gambrel flashing with j 1\"", "price": 56.5}, {"name": "Standing Seam Sepia Brown Gambrel Flashing with J 1-1/2\"", "search": "standing seam sepia brown gambrel flashing with j 1-1/2\"", "price": 57.6}, {"name": "Standing Seam Sepia Brown Gambrel Flashing with J 2\"", "search": "standing seam sepia brown gambrel flashing with j 2\"", "price": 58.72}, {"name": "Standing Seam Sepia Brown Hip Cap 1\"", "search": "standing seam sepia brown hip cap 1\"", "price": 71.6}, {"name": "Standing Seam Sepia Brown Hip Cap 1-1/2\"", "search": "standing seam sepia brown hip cap 1-1/2\"", "price": 73.82}, {"name": "Standing Seam Sepia Brown Hip Cap 2\"", "search": "standing seam sepia brown hip cap 2\"", "price": 76.04}, {"name": "Standing Seam Sepia Brown Pitch Change", "search": "standing seam sepia brown pitch change", "price": 34.45}, {"name": "Standing Seam Sepia Brown Pitch Change with J 1\"", "search": "standing seam sepia brown pitch change with j 1\"", "price": 52.55}, {"name": "Standing Seam Sepia Brown Pitch Change with J 1-1/2\"", "search": "standing seam sepia brown pitch change with j 1-1/2\"", "price": 53.65}, {"name": "Standing Seam Sepia Brown Pitch Change with J 2\"", "search": "standing seam sepia brown pitch change with j 2\"", "price": 54.77}, {"name": "Standing Seam Sepia Brown Ridge Cap", "search": "standing seam sepia brown ridge cap", "price": 35.42}, {"name": "Standing Seam Sepia Brown Ridge Cap Flat", "search": "standing seam sepia brown ridge cap flat", "price": 26.83}, {"name": "Standing Seam Sepia Brown Ridge Cap with J 1\"", "search": "standing seam sepia brown ridge cap with j 1\"", "price": 69.67}, {"name": "Standing Seam Sepia Brown Ridge Cap with J 1-1/2\"", "search": "standing seam sepia brown ridge cap with j 1-1/2\"", "price": 71.88}, {"name": "Standing Seam Sepia Brown Ridge Cap with J 2\"", "search": "standing seam sepia brown ridge cap with j 2\"", "price": 74.1}, {"name": "Standing Seam Sepia Brown Ridge Drip", "search": "standing seam sepia brown ridge drip", "price": 29.53}, {"name": "Standing Seam Sepia Brown Ridge Drip with J 1\"", "search": "standing seam sepia brown ridge drip with j 1\"", "price": 47.63}, {"name": "Standing Seam Sepia Brown Ridge Drip with J 1-1/2\"", "search": "standing seam sepia brown ridge drip with j 1-1/2\"", "price": 48.73}, {"name": "Standing Seam Sepia Brown Ridge Drip with J 2\"", "search": "standing seam sepia brown ridge drip with j 2\"", "price": 49.84}, {"name": "Standing Seam Sepia Brown Side Wall", "search": "standing seam sepia brown side wall", "price": 24.12}, {"name": "Standing Seam Sepia Brown Side Wall with J, 3\" Face, 1\"", "search": "standing seam sepia brown side wall with j, 3\" face, 1\"", "price": 40.97}, {"name": "Standing Seam Sepia Brown Side Wall with J, 3\" Face, 1-1/2\"", "search": "standing seam sepia brown side wall with j, 3\" face, 1-1/2\"", "price": 42.07}, {"name": "Standing Seam Sepia Brown Side Wall with J, 3\" Face, 2\"", "search": "standing seam sepia brown side wall with j, 3\" face, 2\"", "price": 43.2}, {"name": "Standing Seam Sepia Brown Side Wall with J, 5-1/4\" Face, 1\"", "search": "standing seam sepia brown side wall with j, 5-1/4\" face, 1\"", "price": 45.39}, {"name": "Standing Seam Sepia Brown Side Wall with J, 5-1/4\" Face, 1-1/2\"", "search": "standing seam sepia brown side wall with j, 5-1/4\" face, 1-1/2\"", "price": 46.52}, {"name": "Standing Seam Sepia Brown Side Wall with J, 5-1/4\" Face, 2\"", "search": "standing seam sepia brown side wall with j, 5-1/4\" face, 2\"", "price": 47.62}, {"name": "Standing Seam Sepia Brown Step Side Wall 1\"", "search": "standing seam sepia brown step side wall 1\"", "price": 23.98}, {"name": "Standing Seam Sepia Brown Step Side Wall 1-1/2\"", "search": "standing seam sepia brown step side wall 1-1/2\"", "price": 25.09}, {"name": "Standing Seam Sepia Brown Step Side Wall 2\"", "search": "standing seam sepia brown step side wall 2\"", "price": 26.2}, {"name": "Standing Seam Sepia Brown V-Valley with Cleats", "search": "standing seam sepia brown v-valley with cleats", "price": 68.43}, {"name": "Standing Seam Sepia Brown W-Valley with Cleats", "search": "standing seam sepia brown w-valley with cleats", "price": 69.39}, {"name": "Standing Seam Sepia Brown Z-Bar 1\"", "search": "standing seam sepia brown z-bar 1\"", "price": 15.75}, {"name": "Standing Seam Sepia Brown Z-Bar 1-1/2\"", "search": "standing seam sepia brown z-bar 1-1/2\"", "price": 17.95}, {"name": "Standing Seam Sepia Brown Z-Bar 2\"", "search": "standing seam sepia brown z-bar 2\"", "price": 20.17}, {"name": "Standing Seam  Water Channel", "search": "standing seam  water channel", "price": 14.64}, {"name": "Tuff Rib Panel", "search": "tuff rib panel", "price": 1.49}, {"name": "Universal Closure 1\"x2\" (20 foot roll)", "search": "universal closure 1\"x2\" (20 foot roll)", "price": 21.25}, {"name": "Vented Z-Trim Black with Butyl 15 5/8\" (1 1/2\")", "search": "vented z-trim black with butyl 15 5/8\" (1 1/2\")", "price": 9.25}, {"name": "Vented Z-Trim Melchers Green with Butyl 15 5/8\" (1 1/2\")", "search": "vented z-trim melchers green with butyl 15 5/8\" (1 1/2\")", "price": 9.25}, {"name": "V-Valley 24\"-Black", "search": "v-valley 24\"-black", "price": 41.36}, {"name": "V-Valley 24\"-Charcoal", "search": "v-valley 24\"-charcoal", "price": 41.36}, {"name": "V-Valley 24\"-Dark Brown", "search": "v-valley 24\"-dark brown", "price": 41.36}, {"name": "V-Valley 24\"-Ebony Textured", "search": "v-valley 24\"-ebony textured", "price": 45.18}, {"name": "V-Valley 24\"-Graphite Textured", "search": "v-valley 24\"-graphite textured", "price": 45.18}, {"name": "V-Valley 24\"-Sepia Brown Textured", "search": "v-valley 24\"-sepia brown textured", "price": 45.18}, {"name": "W-Valley 24\"-Black", "search": "w-valley 24\"-black", "price": 41.36}, {"name": "W-Valley 24\"-Charcoal", "search": "w-valley 24\"-charcoal", "price": 41.36}, {"name": "W-Valley 24\"-Dark Brown", "search": "w-valley 24\"-dark brown", "price": 41.36}, {"name": "W-Valley 24\"-Ebony Textured", "search": "w-valley 24\"-ebony textured", "price": 45.18}, {"name": "W-Valley 24\"-Graphite Textured", "search": "w-valley 24\"-graphite textured", "price": 45.18}, {"name": "W-Valley 24\"-Sepia Brown Textured", "search": "w-valley 24\"-sepia brown textured", "price": 45.18}];
+
+let quote = [];
+let pendingAction = '';
+let searchTimeout;
+
+const searchInput = document.getElementById('searchInput');
+const resultsDiv = document.getElementById('results');
+const resultsCount = document.getElementById('resultsCount');
+const resultsNote = document.getElementById('resultsNote');
+const quoteListDiv = document.getElementById('quoteList');
+const quoteEmptyDiv = document.getElementById('quoteEmpty');
+const totalAmountEl = document.getElementById('totalAmount');
+const totalItemsEl = document.getElementById('totalItems');
+
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(doSearch, 150);
+});
+
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { searchInput.value = ''; doSearch(); }
+});
+
+function normalize(s) {
+  return s.toLowerCase()
+    .replace(/(\d+)g\b/g, '$1 gauge')
+    .replace(/stnd/g, 'standing')
+    .replace(/mech/g, 'mechanical')
+    .replace(/[^a-z0-9\s\/\"\-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function scoreMatch(tokens, searchStr) {
+  return tokens.every(t => searchStr.includes(t));
+}
+
+function highlightText(name, queryWords) {
+  if (!queryWords.length) return escapeHtml(name);
+  let result = escapeHtml(name);
+  const lowerName = name.toLowerCase();
+  const abbrevMap = {'stnd': 'standing', 'mech': 'mechanical'};
+  queryWords.forEach(word => {
+    const idx = lowerName.indexOf(word);
+    if (idx !== -1) {
+      const orig = name.substring(idx, idx + word.length);
+      result = result.replace(new RegExp(escapeRegex(orig), 'g'), `<mark>${orig}</mark>`);
+    }
+    for (const [abbr, expansion] of Object.entries(abbrevMap)) {
+      if (expansion.startsWith(word) || word === expansion) {
+        const abbrIdx = lowerName.indexOf(abbr);
+        if (abbrIdx !== -1) {
+          const origAbbr = name.substring(abbrIdx, abbrIdx + abbr.length);
+          result = result.replace(new RegExp(escapeRegex(origAbbr), 'g'), `<mark>${origAbbr}</mark>`);
+        }
+      }
+    }
+  });
+  return result;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function doSearch() {
+  const raw = searchInput.value.trim();
+  if (!raw) {
+    resultsDiv.innerHTML = '';
+    resultsCount.textContent = '';
+    resultsNote.textContent = '';
+    showPrompt();
+
+// ============ TRANSFER RECEIVER ============
+function loadTransferredItems() {
+  // Try URL param first, then sessionStorage
+  let items = null;
+  let projName = '';
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const param = params.get('transfer');
+    if (param) {
+      items = JSON.parse(decodeURIComponent(param));
+    }
+  } catch(e) {}
+
+  if (!items) {
+    try {
+      const stored = sessionStorage.getItem('sms_transfer');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        items = parsed.items;
+        projName = parsed.project || '';
+        sessionStorage.removeItem('sms_transfer');
+      }
+    } catch(e) {}
+  }
+
+  if (!items || items.length === 0) return;
+
+  // Show transfer banner
+  const banner = document.createElement('div');
+  banner.id = 'transfer-banner';
+  banner.style.cssText = 'background:linear-gradient(135deg,#1a4a2e,#2e7d52);border-bottom:2px solid #d4a017;padding:14px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:22px;">📦</span>
+      <div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#d4a017;">Transfer Received</div>
+        <div style="font-size:13px;color:#a8d5b8;margin-top:1px;">${items.length} item${items.length!==1?'s':''} transferred from Roof Calculator${projName?' — '+projName:''}</div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('transfer-banner').remove()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:rgba(255,255,255,0.7);padding:6px 14px;cursor:pointer;font-size:13px;">Dismiss</button>
+  `;
+  document.querySelector('header').after(banner);
+
+  // Load items into quote
+  items.forEach(item => {
+    const existing = quote.findIndex(q => q.name === item.name);
+    if (existing !== -1) {
+      quote[existing].qty += item.qty;
+    } else {
+      quote.push({ id: Math.random(), name: item.name, price: item.price, qty: item.qty });
+    }
+  });
+
+  renderQuote();
+
+  // Scroll to quote panel
+  setTimeout(() => {
+    document.querySelector('.right-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+}
+
+// Run on load
+loadTransferredItems();
+// ============ END TRANSFER RECEIVER ============
+
+    return;
+  }
+
+  const normalizedQuery = normalize(raw);
+  const tokens = normalizedQuery.split(' ').filter(t => t.length >= 1);
+  const queryWords = raw.toLowerCase().split(' ').filter(w => w.length >= 1);
+  const matches = PRODUCTS.filter(p => scoreMatch(tokens, p.search));
+
+  resultsCount.textContent = matches.length + ' result' + (matches.length !== 1 ? 's' : '');
+  resultsNote.textContent = matches.length > 50 ? '(Showing first 80 — refine your search)' : '';
+
+  const display = matches.slice(0, 80);
+  const addedIds = new Set(quote.map(q => q.id));
+
+  if (display.length === 0) {
+    resultsDiv.innerHTML = `<div class="no-results"><div class="nr-icon">🔎</div><p>No products found for "<strong>${escapeHtml(raw)}</strong>".<br>Try different keywords.</p></div>`;
+    return;
+  }
+
+  resultsDiv.innerHTML = display.map((p, i) => {
+    const idx = PRODUCTS.indexOf(p);
+    const isAdded = addedIds.has(idx);
+    return `<div class="result-item ${isAdded ? 'already-added' : ''}" onclick="addItem(${idx})">
+      <div class="result-name">${highlightText(p.name, queryWords)}</div>
+      <div class="result-right">
+        <div class="result-price">$${p.price.toFixed(2)}</div>
+        <button class="add-btn" title="${isAdded ? 'Tap to remove' : 'Add to quote'}">${isAdded ? '✓' : '+'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showPrompt() {
+  resultsDiv.innerHTML = `<div class="search-prompt"><span class="sp-icon">🏗</span><span>Start typing to search <strong>777 products</strong></span></div>`;
+}
+
+showPrompt();
+
+// ============ TRANSFER RECEIVER ============
+function loadTransferredItems() {
+  // Try URL param first, then sessionStorage
+  let items = null;
+  let projName = '';
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const param = params.get('transfer');
+    if (param) {
+      items = JSON.parse(decodeURIComponent(param));
+    }
+  } catch(e) {}
+
+  if (!items) {
+    try {
+      const stored = sessionStorage.getItem('sms_transfer');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        items = parsed.items;
+        projName = parsed.project || '';
+        sessionStorage.removeItem('sms_transfer');
+      }
+    } catch(e) {}
+  }
+
+  if (!items || items.length === 0) return;
+
+  // Show transfer banner
+  const banner = document.createElement('div');
+  banner.id = 'transfer-banner';
+  banner.style.cssText = 'background:linear-gradient(135deg,#1a4a2e,#2e7d52);border-bottom:2px solid #d4a017;padding:14px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:22px;">📦</span>
+      <div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#d4a017;">Transfer Received</div>
+        <div style="font-size:13px;color:#a8d5b8;margin-top:1px;">${items.length} item${items.length!==1?'s':''} transferred from Roof Calculator${projName?' — '+projName:''}</div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('transfer-banner').remove()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:rgba(255,255,255,0.7);padding:6px 14px;cursor:pointer;font-size:13px;">Dismiss</button>
+  `;
+  document.querySelector('header').after(banner);
+
+  // Load items into quote
+  items.forEach(item => {
+    const existing = quote.findIndex(q => q.name === item.name);
+    if (existing !== -1) {
+      quote[existing].qty += item.qty;
+    } else {
+      quote.push({ id: Math.random(), name: item.name, price: item.price, qty: item.qty });
+    }
+  });
+
+  renderQuote();
+
+  // Scroll to quote panel
+  setTimeout(() => {
+    document.querySelector('.right-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+}
+
+// Run on load
+loadTransferredItems();
+// ============ END TRANSFER RECEIVER ============
+
+
+function addItem(productIdx) {
+  const existingIdx = quote.findIndex(q => q.id === productIdx);
+  if (existingIdx !== -1) {
+    quote.splice(existingIdx, 1);
+    renderQuote();
+    doSearch();
+    return;
+  }
+  const p = PRODUCTS[productIdx];
+  quote.push({ id: productIdx, name: p.name, price: p.price, qty: 1 });
+  renderQuote();
+  // Collapse search and show prompt
+  searchInput.value = '';
+  resultsDiv.innerHTML = '';
+  resultsCount.textContent = '';
+  resultsNote.textContent = '';
+  showPrompt();
+
+// ============ TRANSFER RECEIVER ============
+function loadTransferredItems() {
+  // Try URL param first, then sessionStorage
+  let items = null;
+  let projName = '';
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const param = params.get('transfer');
+    if (param) {
+      items = JSON.parse(decodeURIComponent(param));
+    }
+  } catch(e) {}
+
+  if (!items) {
+    try {
+      const stored = sessionStorage.getItem('sms_transfer');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        items = parsed.items;
+        projName = parsed.project || '';
+        sessionStorage.removeItem('sms_transfer');
+      }
+    } catch(e) {}
+  }
+
+  if (!items || items.length === 0) return;
+
+  // Show transfer banner
+  const banner = document.createElement('div');
+  banner.id = 'transfer-banner';
+  banner.style.cssText = 'background:linear-gradient(135deg,#1a4a2e,#2e7d52);border-bottom:2px solid #d4a017;padding:14px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:22px;">📦</span>
+      <div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#d4a017;">Transfer Received</div>
+        <div style="font-size:13px;color:#a8d5b8;margin-top:1px;">${items.length} item${items.length!==1?'s':''} transferred from Roof Calculator${projName?' — '+projName:''}</div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('transfer-banner').remove()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:rgba(255,255,255,0.7);padding:6px 14px;cursor:pointer;font-size:13px;">Dismiss</button>
+  `;
+  document.querySelector('header').after(banner);
+
+  // Load items into quote
+  items.forEach(item => {
+    const existing = quote.findIndex(q => q.name === item.name);
+    if (existing !== -1) {
+      quote[existing].qty += item.qty;
+    } else {
+      quote.push({ id: Math.random(), name: item.name, price: item.price, qty: item.qty });
+    }
+  });
+
+  renderQuote();
+
+  // Scroll to quote panel
+  setTimeout(() => {
+    document.querySelector('.right-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+}
+
+// Run on load
+loadTransferredItems();
+// ============ END TRANSFER RECEIVER ============
+
+  // On mobile, scroll down to the quote panel
+  const rightPanel = document.querySelector('.right-panel');
+  if (rightPanel && window.innerWidth <= 700) {
+    rightPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function removeItem(idx) {
+  quote.splice(idx, 1);
+  renderQuote();
+  doSearch();
+}
+
+function updateQty(idx, val) {
+  const n = parseInt(val);
+  quote[idx].qty = (isNaN(n) || n < 1) ? 1 : n;
+  updateTotalsInPlace();
+}
+
+function renderQuote() {
+  if (quote.length === 0) {
+    quoteListDiv.style.display = 'none';
+    quoteEmptyDiv.style.display = 'flex';
+    totalAmountEl.textContent = '$0.00';
+    totalItemsEl.textContent = '0 line items';
+    return;
+  }
+
+  quoteListDiv.style.display = 'flex';
+  quoteEmptyDiv.style.display = 'none';
+
+  quoteListDiv.innerHTML = quote.map((item, i) => {
+    const sub = (item.price * item.qty).toFixed(2);
+    return `<div class="quote-item">
+      <div class="qi-top">
+        <div class="qi-name">${escapeHtml(item.name)}</div>
+        <button class="qi-remove" onclick="removeItem(${i})" title="Remove">✕</button>
+      </div>
+      <div class="qi-bottom">
+        <span class="qty-label">Qty</span><span class="print-qty-val">&nbsp;${item.qty}</span>
+        <div class="qty-control">
+          <button class="qty-btn" onclick="changeQty(${i}, -1)">−</button>
+          <input class="qty-input" type="number" min="1" value="${item.qty}"
+            oninput="updateQtyLive(${i}, this)"
+            onchange="updateQty(${i}, this.value)" />
+          <button class="qty-btn" onclick="changeQty(${i}, 1)">+</button>
+        </div>
+        <div class="qi-subtotal">$${sub}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const total = quote.reduce((s, item) => s + item.price * item.qty, 0);
+  const totalQty = quote.reduce((s, item) => s + item.qty, 0);
+  totalAmountEl.textContent = '$' + total.toFixed(2);
+  totalItemsEl.textContent = `${quote.length} line item${quote.length !== 1 ? 's' : ''} · ${totalQty} unit${totalQty !== 1 ? 's' : ''} total`;
+}
+
+function updateTotalsInPlace() {
+  const subtotals = quoteListDiv.querySelectorAll('.qi-subtotal');
+  const printQtys = quoteListDiv.querySelectorAll('.print-qty-val');
+  quote.forEach((item, i) => {
+    if (subtotals[i]) subtotals[i].textContent = '$' + (item.price * item.qty).toFixed(2);
+    if (printQtys[i]) printQtys[i].textContent = '\u00a0' + item.qty;
+  });
+  const total = quote.reduce((s, item) => s + item.price * item.qty, 0);
+  const totalQty = quote.reduce((s, item) => s + item.qty, 0);
+  totalAmountEl.textContent = '$' + total.toFixed(2);
+  totalItemsEl.textContent = `${quote.length} line item${quote.length !== 1 ? 's' : ''} · ${totalQty} unit${totalQty !== 1 ? 's' : ''} total`;
+}
+
+function updateQtyLive(idx, inputEl) {
+  const n = parseInt(inputEl.value);
+  if (!isNaN(n) && n >= 1) {
+    quote[idx].qty = n;
+    updateTotalsInPlace();
+  }
+}
+
+function changeQty(idx, delta) {
+  quote[idx].qty = Math.max(1, quote[idx].qty + delta);
+  const inputs = quoteListDiv.querySelectorAll('.qty-input');
+  if (inputs[idx]) inputs[idx].value = quote[idx].qty;
+  updateTotalsInPlace();
+}
+
+function clearQuote() {
+  if (quote.length === 0) return;
+  if (confirm('Clear all items from the quote?')) {
+    quote = [];
+    renderQuote();
+    doSearch();
+  }
+}
+
+function triggerAction(action) {
+  if (quote.length === 0) {
+    alert('Please add some items to your quote first.');
+    return;
+  }
+  pendingAction = action;
+  document.getElementById('modalOverlay').classList.add('active');
+  document.getElementById('projectName').focus();
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('active');
+  document.getElementById('projectName').value = '';
+}
+
+document.getElementById('modalOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+
+document.getElementById('projectName').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmAction();
+  if (e.key === 'Escape') closeModal();
+});
+
+function confirmAction() {
+  const projName = document.getElementById('projectName').value.trim() || 'Contractor Quote';
+  closeModal();
+  document.getElementById('printProjectName').textContent = projName;
+  document.getElementById('printDate').textContent = new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('printHeader').style.display = 'block';
+  // Set page title so browser uses project name as the default PDF filename
+  const originalTitle = document.title;
+  document.title = 'Summit Metal Supply - ' + projName;
+  setTimeout(() => {
+    window.print();
+    document.title = originalTitle;
+    document.getElementById('printHeader').style.display = 'none';
+  }, 100);
+}
+</script>
+</body>
+</html>
