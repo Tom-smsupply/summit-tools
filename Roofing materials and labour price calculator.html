@@ -162,7 +162,7 @@
     <div class="p-6 bg-blue-600 text-white text-center">
       <img src="logo.png" alt="Summit Metal Supply" class="h-16 mx-auto mb-2">
       <h1 class="text-2xl font-black">Summit Metal Supply</h1>
-      <p class="text-blue-100">Roof Calculator</p>
+      <p class="text-blue-100">Materials & Labour Calculator</p>
     </div>
     <div id="auth-form" class="p-6">
       <div id="email-step">
@@ -192,7 +192,7 @@
 <!-- Tool Content: shown only to approved contractors -->
 <div id="tool-content" style="display:none;">
 <!-- Main Content (hidden until authenticated) -->
-<div id="main-content" class="hidden" style="width:100%;display:flex;justify-content:center;padding:40px 16px;min-height:100vh;align-items:flex-start;">
+<div id="main-content" style="display:none;width:100%;justify-content:center;padding:40px 16px;min-height:100vh;align-items:flex-start;">
 <div class="wrapper">
 
   <div class="header">
@@ -521,8 +521,6 @@ function verifyCode() {
     sessionStorage.removeItem('authEmail');
     sessionStorage.removeItem('authCodeTime');
     document.getElementById('auth-modal').classList.add('hidden');
-    document.body.style.display = 'block';
-    document.body.style.padding = '0';
     checkContractorAccess(email);
   } else {
     alert('Invalid code. Please try again.');
@@ -532,26 +530,31 @@ function verifyCode() {
 }
 
 async function checkContractorAccess(email) {
+  function showTool() {
+    document.getElementById('access-denied').style.display = 'none';
+    document.getElementById('tool-content').style.display = '';
+  }
+  function showDenied() {
+    document.getElementById('access-denied').style.display = 'flex';
+    document.getElementById('tool-content').style.display = 'none';
+  }
+  if (!email) { showDenied(); return; }
   try {
     const res = await fetch(CONTRACTORS_URL + '?nocache=' + Date.now());
-    const data = await res.json();
-    const approved = (data.approved || []).map(e => e.toLowerCase());
-    if (approved.includes(email.toLowerCase())) {
-      document.getElementById('access-denied').style.display = 'none';
-      document.getElementById('tool-content').style.display = '';
-      const mc = document.getElementById('main-content');
-      if (mc) { mc.classList.remove('hidden'); mc.style.display = 'flex'; }
-      // Initialize calculator now that tool is visible
-      if (typeof loadSettings === 'function') { loadSettings(); }
-      if (typeof window.resetCalc === 'function') { window.resetCalc(); }
+    if (!res.ok) { console.warn('contractors.json fetch failed:', res.status); showDenied(); return; }
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch(e) { console.warn('contractors.json parse error:', e); showDenied(); return; }
+    const approved = (data.approved || []).map(e => e.trim().toLowerCase());
+    console.log('Checking', email.toLowerCase(), 'against', approved);
+    if (approved.includes(email.trim().toLowerCase())) {
+      showTool();
     } else {
-      document.getElementById('access-denied').style.display = 'flex';
-      document.getElementById('tool-content').style.display = 'none';
+      showDenied();
     }
   } catch(e) {
     console.warn('Could not load contractors list:', e);
-    document.getElementById('access-denied').style.display = 'flex';
-    document.getElementById('tool-content').style.display = 'none';
+    showDenied();
   }
 }
 
@@ -791,13 +794,7 @@ if (checkAuth()) {
     window.currentSlope='low';document.getElementById('slopeNote').classList.add('hidden');
     calc();
   };
-  window.confirmNewEstimate=function(){
-    const name=document.getElementById('projectName').value.trim();
-    if(!name){window.resetCalc();return;}
-    if(confirm('Start a new estimate? The current estimate for "'+name+'" will be cleared.
-
-Make sure you have saved it first.')){ window.resetCalc(); }
-  };
+  window.confirmNewEstimate=function(){const name=document.getElementById('projectName').value.trim();if(!name){window.resetCalc();return;}if(confirm('Start a new estimate? The current estimate for "'+name+'" will be cleared. Make sure you have saved it first.')){window.resetCalc();}}
 </script>
 
 <script>
