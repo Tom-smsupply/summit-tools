@@ -157,40 +157,38 @@
 
 
 <!-- Authentication Modal -->
-<div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900">
-  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-    <div class="p-6 bg-blue-600 text-white text-center">
-      <img src="logo.png" alt="Summit Metal Supply" class="h-16 mx-auto mb-2">
-      <h1 class="text-2xl font-black">Summit Metal Supply</h1>
-      <p class="text-blue-100">Materials & Labour Calculator</p>
+<div id="auth-modal" style="position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;padding:16px;background:#0f172a;">
+  <div style="background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.5);max-width:420px;width:100%;overflow:hidden;">
+    <div style="padding:24px;background:#2563eb;color:#fff;text-align:center;">
+      <img src="logo.png" alt="Summit Metal Supply" style="height:64px;margin:0 auto 8px;display:block;">
+      <h1 style="font-size:22px;font-weight:900;margin-bottom:4px;">Summit Metal Supply</h1>
+      <p style="color:#bfdbfe;font-size:14px;">Materials &amp; Labour Calculator</p>
     </div>
-    <div id="auth-form" class="p-6">
+    <div id="auth-form" style="padding:24px;">
       <div id="email-step">
-        <p class="text-slate-600 mb-4 text-center">Enter your email address to receive an access code.</p>
-        <input type="email" id="auth-email" class="input-field mb-4" placeholder="your@email.com" onkeypress="if(event.key==='Enter')requestCode()">
-        <button onclick="requestCode()" id="request-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">Request Access Code</button>
+        <p style="color:#475569;margin-bottom:16px;text-align:center;font-size:14px;">Enter your email address to receive an access code.</p>
+        <input type="email" id="auth-email" class="input-field" style="margin-bottom:16px;" placeholder="your@email.com" onkeypress="if(event.key==='Enter')requestCode()">
+        <button onclick="requestCode()" id="request-btn" style="width:100%;background:#2563eb;color:#fff;padding:12px;border-radius:8px;border:none;font-size:15px;font-weight:700;cursor:pointer;">Request Access Code</button>
       </div>
-      <div id="code-step" class="hidden">
-        <p class="text-slate-600 mb-4 text-center">Enter the 6-digit code sent to <span id="sent-email" class="font-bold"></span></p>
-        <input type="text" id="auth-code" class="input-field mb-4 text-center text-2xl tracking-widest" placeholder="000000" maxlength="6" onkeypress="if(event.key==='Enter')verifyCode()">
-        <button onclick="verifyCode()" id="verify-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">Verify Code</button>
-        <button onclick="document.getElementById('email-step').classList.remove('hidden'); document.getElementById('code-step').classList.add('hidden');" class="w-full mt-2 text-slate-500 py-2 hover:text-slate-700">← Try a different email</button>
+      <div id="code-step" style="display:none;">
+        <p style="color:#475569;margin-bottom:16px;text-align:center;font-size:14px;">Enter the 6-digit code sent to <span id="sent-email" style="font-weight:700;"></span></p>
+        <input type="text" id="auth-code" class="input-field" style="margin-bottom:16px;text-align:center;font-size:24px;letter-spacing:8px;" placeholder="000000" maxlength="6" onkeypress="if(event.key==='Enter')verifyCode()">
+        <button onclick="verifyCode()" id="verify-btn" style="width:100%;background:#2563eb;color:#fff;padding:12px;border-radius:8px;border:none;font-size:15px;font-weight:700;cursor:pointer;">Verify Code</button>
+        <button onclick="document.getElementById('email-step').style.display='';document.getElementById('code-step').style.display='none';" style="width:100%;margin-top:8px;background:none;border:none;color:#64748b;padding:8px;cursor:pointer;font-size:13px;">← Try a different email</button>
       </div>
-      <div id="blocked-step" class="hidden">
-        <div class="text-center py-8">
-          <p class="text-5xl font-black text-red-600 mb-4">GET YOUR OWN CALCULATOR</p>
-          <p class="text-slate-500">Access denied.</p>
+      <div id="blocked-step" style="display:none;">
+        <div style="text-align:center;padding:32px 0;">
+          <p style="font-size:40px;font-weight:900;color:#dc2626;margin-bottom:16px;">GET YOUR OWN CALCULATOR</p>
+          <p style="color:#64748b;">Access denied.</p>
         </div>
       </div>
     </div>
-    <div class="px-6 pb-6 text-center">
-      <p class="text-xs text-slate-400">© 2025 Summit Metal Supply. All rights reserved.</p>
+    <div style="padding:0 24px 24px;text-align:center;">
+      <p style="font-size:11px;color:#94a3b8;">© 2025 Summit Metal Supply. All rights reserved.</p>
     </div>
   </div>
 </div>
 
-<!-- Tool Content: shown only to approved contractors -->
-<div id="tool-content" style="display:none;">
 <!-- Main Content (hidden until authenticated) -->
 <div id="main-content" style="display:none;width:100%;justify-content:center;padding:40px 16px;min-height:100vh;align-items:flex-start;">
 <div class="wrapper">
@@ -481,8 +479,8 @@ function requestCode() {
   emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { to_email: email, code: code })
   .then(function() {
     document.getElementById('sent-email').innerText = email;
-    document.getElementById('email-step').classList.add('hidden');
-    document.getElementById('code-step').classList.remove('hidden');
+    document.getElementById('email-step').style.display = 'none';
+    document.getElementById('code-step').style.display = '';
     document.getElementById('auth-code').focus();
   })
   .catch(function(error) {
@@ -507,8 +505,8 @@ function verifyCode() {
   const email = sessionStorage.getItem('authEmail');
   if (Date.now() - codeTime > 10 * 60 * 1000) {
     alert('Code has expired. Please request a new one.');
-    document.getElementById('email-step').classList.remove('hidden');
-    document.getElementById('code-step').classList.add('hidden');
+    document.getElementById('email-step').style.display = '';
+    document.getElementById('code-step').style.display = 'none';
     sessionStorage.removeItem('authCode');
     sessionStorage.removeItem('authEmail');
     sessionStorage.removeItem('authCodeTime');
@@ -520,7 +518,7 @@ function verifyCode() {
     sessionStorage.removeItem('authCode');
     sessionStorage.removeItem('authEmail');
     sessionStorage.removeItem('authCodeTime');
-    document.getElementById('auth-modal').classList.add('hidden');
+    document.getElementById('auth-modal').style.display = 'none';
     checkContractorAccess(email);
   } else {
     alert('Invalid code. Please try again.');
@@ -560,7 +558,7 @@ async function checkContractorAccess(email) {
 
 // Check auth on page load
 if (checkAuth()) {
-  document.getElementById('auth-modal').classList.add('hidden');
+  document.getElementById('auth-modal').style.display = 'none';
   document.body.style.display = 'block';
   document.body.style.padding = '0';
   try {
