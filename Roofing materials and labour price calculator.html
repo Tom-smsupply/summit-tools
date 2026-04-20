@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Steel Roofing Estimator</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --gun:#3d4a52;--gun-dark:#2b353c;--gun-deeper:#1e272d;--gun-light:#e8ecee;--gun-mid:#c2cdd2;
+      --accent:#e8ecee;--black:#1a1a1a;--gray-mid:#555;--gray-light:#888;
+      --border:#d0d8dc;--surface:#f4f6f7;--white:#fff
+    }
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#e8ecee;color:var(--black);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px}
+    .wrapper{width:100%;max-width:660px}
+    /* Header */
+    .header{background:var(--gun-deeper);color:#fff;padding:20px 24px;border-radius:10px 10px 0 0;display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--gun)}
+    .header-icon{width:40px;height:40px;background:rgba(255,255,255,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:0.5px solid rgba(255,255,255,0.15)}
+    .header h1{font-size:18px;font-weight:600;color:#f0f4f6;letter-spacing:0.2px}
+    .header p{font-size:12px;color:#9aadb5;margin-top:2px}
+    .header-lock{margin-left:auto;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px;border:0.5px solid rgba(255,255,255,0.25);padding:5px 12px;border-radius:5px;transition:background 0.15s;white-space:nowrap;flex-shrink:0;color:#c8d8df}
+    .header-lock:hover{background:rgba(255,255,255,0.1);color:#fff}
+    /* Card */
+    .card{background:var(--white);border:0.5px solid var(--border);border-top:none}
+    .section{padding:20px 24px;border-bottom:0.5px solid var(--border)}.section:last-child{border-bottom:none}
+    .section-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--gun);margin-bottom:14px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+    label{display:block;font-size:12px;color:var(--gray-mid);margin-bottom:5px}
+    input[type=number],input[type=text],select{width:100%;padding:9px 12px;border:0.5px solid var(--border);border-radius:6px;font-size:14px;background:var(--surface);color:var(--black);transition:border-color 0.15s}
+    input[type=number]:focus,input[type=text]:focus,select:focus{outline:none;border-color:var(--gun);box-shadow:0 0 0 3px rgba(61,74,82,0.12)}
+    /* Slope */
+    .slope-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .slope-btn{padding:10px 6px;border:0.5px solid var(--border);border-radius:6px;background:var(--surface);font-size:12px;cursor:pointer;text-align:center;color:var(--gray-mid);transition:all 0.15s;line-height:1.5}
+    .slope-btn.active{background:var(--gun-deeper);border-color:var(--gun-deeper);color:#f0f4f6;font-weight:600}
+    .slope-btn:hover:not(.active){background:var(--gun-light);border-color:var(--gun)}
+    .info-box{background:#edf1f3;border-left:3px solid var(--gun);border-radius:0 6px 6px 0;padding:10px 14px;font-size:12px;color:var(--gun-dark);margin-top:12px}
+    /* Results */
+    .results{background:var(--gun-deeper);padding:22px 24px;border-radius:0 0 10px 10px;border-top:2px solid var(--gun)}
+    .results-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:#7a9aa8;margin-bottom:16px}
+    .result-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid rgba(255,255,255,0.06)}.result-row:last-child{border-bottom:none}
+    .result-label{font-size:13px;color:#a8bec6}.result-value{font-size:14px;font-weight:500;color:#e8f0f4}.result-value.add{color:#7ec8d8}
+    .result-section-header{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#4a6570;padding:12px 0 4px;margin-top:4px}
+    .total-row{display:flex;justify-content:space-between;align-items:center;padding:16px 0 0;margin-top:6px;border-top:1px solid rgba(255,255,255,0.15)}
+    .total-label{font-size:15px;font-weight:500;color:#c8dce4}.total-value{font-size:26px;font-weight:600;color:#f0f6fa}
+    .results-footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:12px}
+    .disclaimer{font-size:11px;color:#4a6570;line-height:1.5}
+    .save-estimate-btn{background:var(--gun);color:#f0f4f6;border:none;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s;white-space:nowrap;flex-shrink:0}
+    .save-estimate-btn:hover{background:var(--gun-dark)}
+    .new-estimate-btn{background:transparent;color:#7a9aa8;border:0.5px solid #3a5060;padding:9px 16px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.15s;white-space:nowrap;flex-shrink:0}
+    .new-estimate-btn:hover{background:rgba(255,255,255,0.06);color:#c8dce4;border-color:#5a7a8a}
+    /* Modals shared */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(14,20,24,0.7);align-items:center;justify-content:center;z-index:100}.modal-bg.open{display:flex}
+    .modal-sm{background:#fff;border-radius:12px;padding:32px 28px;width:340px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)}
+    .modal-sm .modal-icon{font-size:32px;margin-bottom:12px}.modal-sm h3{font-size:17px;font-weight:600;margin-bottom:6px;color:var(--black)}.modal-sm p{font-size:13px;color:var(--gray-light);margin-bottom:18px}
+    .modal-sm input[type=password]{width:100%;padding:11px 14px;border:0.5px solid var(--border);border-radius:7px;font-size:16px;text-align:center;letter-spacing:4px;background:var(--surface);color:var(--black)}
+    .modal-sm input[type=text]{width:100%;padding:11px 14px;border:0.5px solid var(--border);border-radius:7px;font-size:15px;background:var(--surface);color:var(--black)}
+    .modal-sm input:focus{outline:none;border-color:var(--gun);box-shadow:0 0 0 3px rgba(61,74,82,0.12)}
+    .modal-btns{display:flex;gap:8px;margin-top:14px}
+    .modal-btn{flex:1;padding:10px;border-radius:7px;font-size:13px;cursor:pointer;border:0.5px solid var(--border);background:var(--surface);color:var(--black);font-weight:500;transition:all 0.15s}.modal-btn:hover{background:#e8ecee}
+    .modal-btn.primary{background:var(--gun-deeper);color:#f0f4f6;border-color:var(--gun-deeper)}.modal-btn.primary:hover{background:var(--gun-dark)}
+    .modal-error{font-size:12px;color:#c0392b;margin-top:8px;min-height:16px;text-align:left}
+    .modal-note{font-size:11px;color:#aaa;margin-top:12px;line-height:1.5}
+    /* Save choice */
+    .save-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+    .save-choice-card{border:0.5px solid var(--border);border-radius:8px;padding:18px 14px;cursor:pointer;text-align:center;transition:all 0.15s;background:var(--surface)}
+    .save-choice-card:hover{border-color:var(--gun);background:var(--gun-light)}
+    .choice-icon{font-size:26px;margin-bottom:8px}.choice-label{font-size:13px;font-weight:600;color:var(--black)}.choice-desc{font-size:11px;color:var(--gray-light);margin-top:4px;line-height:1.4}
+    /* Admin rates modal */
+    .modal-lg{background:#fff;border-radius:12px;padding:28px 28px 24px;width:min(700px,96vw);max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.35)}
+    .modal-lg-header{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:14px;border-bottom:0.5px solid var(--border);flex-wrap:wrap}
+    .modal-lg-header h3{font-size:16px;font-weight:600;color:var(--black)}.admin-badge{background:var(--gun-deeper);color:#f0f4f6;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;letter-spacing:0.5px}
+    .sync-status{margin-left:auto;font-size:11px;color:var(--gray-light)}
+    .rates-block{border:0.5px solid #dde2e5;border-radius:8px;padding:14px 16px;margin-bottom:12px;background:#fcfdfd}
+    .rates-block-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--gun-dark);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    .rates-block-subtitle{font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--gray-light);font-style:italic}
+    .profile-table{width:100%;border-collapse:collapse}
+    .profile-table th{font-size:10px;font-weight:600;color:var(--gray-light);text-transform:uppercase;letter-spacing:0.8px;text-align:left;padding:0 8px 8px 0;border-bottom:0.5px solid #dde2e5}
+    .profile-table th:not(:first-child){text-align:center}
+    .profile-table td{padding:8px 8px 0 0;vertical-align:top}
+    .profile-table td:first-child{font-size:12px;color:var(--gray-mid);padding-top:14px;white-space:nowrap}
+    .profile-table td:not(:first-child){text-align:center}
+    .profile-table input{width:88px;padding:7px 8px;border:0.5px solid #c2cdd2;border-radius:5px;font-size:13px;background:#f4f6f7;color:var(--black);text-align:center}
+    .profile-table input:focus{outline:none;border-color:var(--gun);box-shadow:0 0 0 3px rgba(61,74,82,0.12)}
+    .rates-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .rates-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .rates-grid4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+    .rates-field label{font-size:11px;color:var(--gray-mid);margin-bottom:4px;display:block}
+    .rates-field input[type=text],.rates-field input[type=number]{width:100%;padding:8px 10px;border:0.5px solid #c2cdd2;border-radius:5px;font-size:13px;background:#f4f6f7;color:var(--black)}
+    .rates-field input:focus{outline:none;border-color:var(--gun);box-shadow:0 0 0 3px rgba(61,74,82,0.12)}
+    .rates-field textarea{width:100%;padding:10px 12px;border:0.5px solid #c2cdd2;border-radius:5px;font-size:13px;background:#f4f6f7;color:var(--black);resize:vertical;min-height:90px;line-height:1.6;font-family:inherit}
+    .rates-field textarea:focus{outline:none;border-color:var(--gun);box-shadow:0 0 0 3px rgba(61,74,82,0.12)}
+    /* Logo upload */
+    .logo-upload-row{display:flex;align-items:center;gap:14px;margin-top:12px}
+    .logo-preview{width:80px;height:60px;border:0.5px solid #c2cdd2;border-radius:6px;background:#f4f6f7;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+    .logo-preview img{max-width:100%;max-height:100%;object-fit:contain}
+    .logo-preview .logo-placeholder{font-size:11px;color:#bbb;text-align:center;line-height:1.4}
+    .logo-upload-btn{display:inline-block;padding:8px 14px;border:0.5px solid #c2cdd2;border-radius:5px;background:#f4f6f7;color:var(--gray-mid);font-size:12px;cursor:pointer;transition:all 0.15s}
+    .logo-upload-btn:hover{border-color:var(--gun);color:var(--gun-dark)}
+    .logo-remove-btn{font-size:11px;color:#c0392b;cursor:pointer;text-decoration:underline;display:none}
+    /* Admin footer */
+    .modal-lg-footer{display:flex;align-items:center;gap:12px;margin-top:20px;padding-top:16px;border-top:0.5px solid var(--border)}
+    .save-rates-btn{background:var(--gun-deeper);color:#f0f4f6;border:none;padding:9px 22px;border-radius:6px;font-size:13px;cursor:pointer;font-weight:600;transition:background 0.15s}.save-rates-btn:hover{background:var(--gun-dark)}
+    .save-msg{font-size:12px;color:var(--gun);opacity:0;transition:opacity 0.3s}.save-msg.show{opacity:1}
+    /* Quote modal */
+    .modal-quote{background:#fff;border-radius:12px;width:min(620px,96vw);max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.35)}
+    .quote-actions{display:flex;gap:10px;padding:14px 24px;border-top:0.5px solid var(--border);background:#f4f6f7;border-radius:0 0 12px 12px;flex-wrap:wrap}
+    .quote-print-btn{background:var(--gun-deeper);color:#f0f4f6;border:none;padding:9px 20px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;transition:background 0.15s}.quote-print-btn:hover{background:var(--gun-dark)}
+    /* Quote document */
+    #quoteDoc{padding:36px 40px 28px;font-family:Georgia,'Times New Roman',serif}
+    .q-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:18px;border-bottom:2.5px solid var(--gun-deeper)}
+    .q-logo-wrap{display:flex;flex-direction:column;gap:6px}
+    .q-logo{max-height:64px;max-width:200px;object-fit:contain}
+    .q-company{font-size:22px;font-weight:700;color:var(--gun-deeper);font-family:-apple-system,sans-serif;letter-spacing:-0.3px}
+    .q-company-tag{font-size:11px;color:var(--gray-light);font-family:-apple-system,sans-serif;margin-top:2px}
+    .q-meta{text-align:right;font-family:-apple-system,sans-serif}
+    .q-meta-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray-light)}
+    .q-meta-val{font-size:13px;color:var(--black);font-weight:600;margin-bottom:6px}
+    .q-badge{display:inline-block;background:var(--gun-deeper);color:#f0f4f6;font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:1px;margin-bottom:16px;font-family:-apple-system,sans-serif}
+    .q-scope{background:#f4f6f7;border-left:3px solid var(--gun);padding:14px 18px;margin-bottom:22px;border-radius:0 6px 6px 0}
+    .q-scope-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;font-family:-apple-system,sans-serif}
+    .q-scope-label{color:var(--gray-mid)}.q-scope-val{font-weight:600;color:var(--black)}
+    .q-price-box{border:2px solid var(--gun-deeper);border-radius:8px;padding:20px 24px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:center;background:#f4f6f7}
+    .q-price-label{font-size:13px;color:var(--gray-mid);font-family:-apple-system,sans-serif}
+    .q-price-total{font-size:34px;font-weight:700;color:var(--gun-deeper);font-family:-apple-system,sans-serif}
+    .q-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--gun-deeper);margin-bottom:10px;font-family:-apple-system,sans-serif}
+    .q-terms{font-size:13px;color:#333;line-height:1.8;white-space:pre-wrap;font-family:-apple-system,sans-serif}
+    .q-divider{border:none;border-top:0.5px solid #dde2e5;margin:20px 0}
+    .q-sig-block{display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-top:36px}
+    .q-sig-line{border-top:0.5px solid #999;padding-top:6px;font-size:11px;color:var(--gray-light);font-family:-apple-system,sans-serif}
+    .q-footer{font-size:10px;color:#bbb;text-align:center;margin-top:16px;font-family:-apple-system,sans-serif;line-height:1.6}
+    /* Toast */
+    .toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--gun-deeper);color:#f0f4f6;padding:12px 22px;border-radius:8px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,0.4);opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;z-index:300}
+    .toast.show{opacity:1}
+    .hidden{display:none!important}
+    /* Print */
+    @media print{
+      body *{visibility:hidden}
+      #quoteDoc,#quoteDoc *{visibility:visible}
+      #quoteDoc{position:fixed;top:0;left:0;width:100%;padding:28px 36px}
+      .q-price-total{font-size:28pt}
+    }
+    @media(max-width:520px){
+      body{padding:0}.wrapper{max-width:100%}.header{border-radius:0}
+      .grid2,.grid3{grid-template-columns:1fr 1fr}.slope-grid{grid-template-columns:repeat(2,1fr)}
+      .rates-grid3,.rates-grid4{grid-template-columns:1fr 1fr}
+      .profile-table input{width:70px}.save-choice-grid{grid-template-columns:1fr}
+      #quoteDoc{padding:20px}.q-sig-block{grid-template-columns:1fr;gap:24px}
+      .q-header{flex-direction:column;gap:12px}.q-meta{text-align:left}
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <div class="header">
+    <div class="header-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <line x1="3" y1="9" x2="21" y2="9"/>
+        <line x1="9" y1="22" x2="9" y2="12"/><line x1="15" y1="12" x2="15" y2="22"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Steel Roofing Estimator</h1>
+      <p>Professional standing seam &amp; metal panel pricing tool</p>
+    </div>
+    <div class="header-lock" id="lockBtn" onclick="openLock()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+      </svg>
+      <span id="lockLabel">Admin</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section">
+      <div class="section-title">Project details</div>
+      <div style="margin-bottom:14px">
+        <label>Customer / project name <span style="color:#c0392b">*</span></label>
+        <input type="text" id="projectName" placeholder="e.g. 456 Oak Ave – Smith" maxlength="80">
+      </div>
+      <div class="grid2">
+        <div><label>Total square footage (ft²)</label><input type="number" id="sqft" value="" min="100" max="20000" step="50" oninput="calc()" placeholder="e.g. 1500"></div>
+        <div><label>Number of storeys</label>
+          <select id="storeys" onchange="calc()">
+            <option value="1">1 storey</option><option value="2">2 storey</option><option value="3">3 storey</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2" style="margin-top:14px">
+        <div><label>Panel profile / type</label>
+          <select id="profile" onchange="calc()">
+            <option value="corrugated">Corrugated / R-panel</option>
+            <option value="standing" selected>Standing seam</option>
+            <option value="shingle">Steel shingle / tile</option>
+          </select>
+        </div>
+        <div><label>Distance to jobsite (km)</label><input type="number" id="km" value="0" min="0" max="2000" step="1" oninput="calc()"></div>
+      </div>
+      <div class="grid2" style="margin-top:14px">
+        <div><label>Estimated days to complete</label><input type="number" id="days" value="1" min="1" max="60" step="1" oninput="calc()"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Roof slope</div>
+      <div class="slope-grid">
+        <div class="slope-btn active" onclick="setSlope(this,'low')">Flat – Low<br><span style="font-size:10px;opacity:0.7">2/12 – 4/12</span></div>
+        <div class="slope-btn" onclick="setSlope(this,'std')">Standard<br><span style="font-size:10px;opacity:0.7">4/12 – 7/12</span></div>
+        <div class="slope-btn" onclick="setSlope(this,'steep')">Steep<br><span style="font-size:10px;opacity:0.7">7/12 – 9/12</span></div>
+        <div class="slope-btn" onclick="setSlope(this,'vsteep')">Very steep<br><span style="font-size:10px;opacity:0.7">9/12+</span></div>
+      </div>
+      <div id="slopeNote" class="info-box hidden"></div>
+    </div>
+    <div class="section">
+      <div class="section-title">Add-ons &amp; complexity</div>
+      <div class="grid3">
+        <div><label>Vent pipes (bathroom)</label><input type="number" id="vents" value="0" min="0" max="20" oninput="calc()"></div>
+        <div><label>Valleys / hips (linear ft)</label><input type="number" id="valleys" value="0" min="0" max="500" oninput="calc()"></div>
+        <div><label>Skylights</label><input type="number" id="skylights" value="0" min="0" max="10" oninput="calc()"></div>
+      </div>
+      <div class="grid2" style="margin-top:14px">
+        <div><label>Chimneys / penetrations</label><input type="number" id="chimneys" value="0" min="0" max="10" oninput="calc()"></div>
+        <div><label>Existing roof removal</label>
+          <select id="tearoff" onchange="calc()">
+            <option value="0" selected>No removal (new build)</option>
+            <option value="1">Remove 1 layer</option>
+            <option value="2">Remove 2 layers</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="results" id="resultsSection">
+    <div class="results-title">Estimate breakdown</div>
+    <div id="breakdown"></div>
+    <div class="total-row">
+      <span class="total-label">Total estimate</span>
+      <span class="total-value" id="total">$0</span>
+    </div>
+    <div class="results-footer">
+      <p class="disclaimer">Estimates are for budgeting purposes only.<br>Final pricing subject to on-site inspection.</p>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="new-estimate-btn" onclick="confirmNewEstimate()">New estimate</button>
+        <button class="save-estimate-btn" onclick="openSaveChoice()">Save estimate</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL: Password -->
+<div class="modal-bg" id="modalAdmin">
+  <div class="modal-sm">
+    <div class="modal-icon">🔒</div>
+    <h3>Admin access</h3>
+    <p>Enter your password to edit pricing rates</p>
+    <input type="password" id="pwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPw()">
+    <div class="modal-error" id="pwError"></div>
+    <div class="modal-btns">
+      <button class="modal-btn" onclick="closeModal('modalAdmin')">Cancel</button>
+      <button class="modal-btn primary" onclick="checkPw()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Save choice (name required, then pick type) -->
+<div class="modal-bg" id="modalSaveChoice">
+  <div class="modal-sm">
+    <div class="modal-icon">💾</div>
+    <h3>Save estimate</h3>
+    <p>Choose how to save this estimate</p>
+    <div class="save-choice-grid">
+      <div class="save-choice-card" onclick="confirmInternalSave()">
+        <div class="choice-icon">🛠️</div>
+        <div class="choice-label">Working copy</div>
+        <div class="choice-desc">Save all details for reference and editing later</div>
+      </div>
+      <div class="save-choice-card" onclick="confirmQuoteAndPreview()">
+        <div class="choice-icon">📄</div>
+        <div class="choice-label">Customer quote</div>
+        <div class="choice-desc">Save then preview the professional client quote</div>
+      </div>
+    </div>
+    <div class="modal-error" id="saveChoiceError"></div>
+    <div class="modal-btns" style="margin-top:16px">
+      <button class="modal-btn" onclick="closeModal('modalSaveChoice')">Cancel</button>
+    </div>
+    <p class="modal-note">Saved to this device's browser storage. Up to 100 estimates kept.</p>
+  </div>
+</div>
+
+<!-- MODAL: Customer quote preview -->
+<div class="modal-bg" id="modalQuote">
+  <div class="modal-quote">
+    <div id="quoteDoc"></div>
+    <div class="quote-actions">
+      <button class="quote-print-btn" onclick="window.print()">🖨️ Print / Save PDF</button>
+      <button class="modal-btn" onclick="closeModal('modalQuote')" style="flex:none;padding:9px 18px;margin-left:auto">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Admin rates -->
+<div class="modal-bg" id="modalRates">
+  <div class="modal-lg">
+    <div class="modal-lg-header">
+      <h3>Pricing rates &amp; settings</h3>
+      <span class="admin-badge">ADMIN</span>
+      <span class="sync-status" id="syncStatus">Loading…</span>
+      <button class="modal-btn" style="flex:none;padding:5px 14px;font-size:12px;margin-left:8px" onclick="closeModal('modalRates');lockAdmin()">🔒 Lock &amp; close</button>
+    </div>
+
+    <!-- Company branding -->
+    <div class="rates-block">
+      <div class="rates-block-title">Company branding <span class="rates-block-subtitle">— appears on customer quotes</span></div>
+      <div class="rates-grid2">
+        <div class="rates-field">
+          <label>Company name</label>
+          <input type="text" id="r-company-name" placeholder="e.g. Apex Steel Roofing" maxlength="60">
+        </div>
+        <div class="rates-field">
+          <label>Tagline / contact (optional)</label>
+          <input type="text" id="r-company-tag" placeholder="e.g. Licensed &amp; Insured · (555) 123-4567" maxlength="80">
+        </div>
+      </div>
+      <div style="margin-top:12px">
+        <div class="rates-field">
+          <label>Logo filename <span style="font-weight:400;text-transform:none;font-style:italic;color:#aaa">— place the image file in the same folder as this HTML on GitHub</span></label>
+          <input type="text" id="r-logo-file" placeholder="e.g. logo.png or apex-logo.jpg" maxlength="120" oninput="previewLogoFile()">
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
+          <div class="logo-preview" id="logoPreview">
+            <div class="logo-placeholder">No logo</div>
+          </div>
+          <div style="font-size:11px;color:#aaa;line-height:1.7">
+            Upload your image file to your GitHub repo<br>in the same folder as <code style="background:#eee;padding:1px 5px;border-radius:3px">index.html</code><br>then type the exact filename above.<br>
+            <span style="color:#3d4a52;font-weight:500">Preview updates as you type.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Materials & labour per profile -->
+    <div class="rates-block">
+      <div class="rates-block-title">Materials cost &amp; labour <span class="rates-block-subtitle">— per panel type</span></div>
+      <table class="profile-table">
+        <thead>
+          <tr>
+            <th>Panel type</th><th>Material cost ($/ft²)</th><th>Markup (%)</th><th>Labour ($/ft²)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Corrugated / R-panel</td>
+            <td><input type="number" id="r-mat-corrugated" step="0.25" value="3.50" oninput="calc()"></td>
+            <td><input type="number" id="r-markup-corrugated" step="1" value="20" min="0" max="200" oninput="calc()"></td>
+            <td><input type="number" id="r-labour-corrugated" step="0.25" value="3.50" oninput="calc()"></td>
+          </tr>
+          <tr>
+            <td>Standing seam</td>
+            <td><input type="number" id="r-mat-standing" step="0.25" value="6.00" oninput="calc()"></td>
+            <td><input type="number" id="r-markup-standing" step="1" value="20" min="0" max="200" oninput="calc()"></td>
+            <td><input type="number" id="r-labour-standing" step="0.25" value="7.00" oninput="calc()"></td>
+          </tr>
+          <tr>
+            <td>Steel shingle / tile</td>
+            <td><input type="number" id="r-mat-shingle" step="0.25" value="5.00" oninput="calc()"></td>
+            <td><input type="number" id="r-markup-shingle" step="1" value="20" min="0" max="200" oninput="calc()"></td>
+            <td><input type="number" id="r-labour-shingle" step="0.25" value="5.00" oninput="calc()"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Labour add-ons -->
+    <div class="rates-block">
+      <div class="rates-block-title">Labour add-ons</div>
+      <div class="rates-grid3">
+        <div class="rates-field"><label>Valley / hip ($/lin ft)</label><input type="number" id="r-valley" step="1" value="18" oninput="calc()"></div>
+        <div class="rates-field"><label>Vent pipe flashing ($/each)</label><input type="number" id="r-vent" step="5" value="75" oninput="calc()"></div>
+        <div class="rates-field"><label>Skylight flash &amp; seal ($/each)</label><input type="number" id="r-sky" step="5" value="200" oninput="calc()"></div>
+      </div>
+      <div class="rates-grid3" style="margin-top:10px">
+        <div class="rates-field"><label>Chimney / penetration ($/each)</label><input type="number" id="r-chimney" step="5" value="200" oninput="calc()"></div>
+        <div class="rates-field"><label>Roof removal — 1 layer ($/ft²)</label><input type="number" id="r-t1" step="0.10" value="0.65" oninput="calc()"></div>
+        <div class="rates-field"><label>Roof removal — 2 layers ($/ft²)</label><input type="number" id="r-t2" step="0.10" value="1.15" oninput="calc()"></div>
+      </div>
+    </div>
+
+    <!-- Slope premiums -->
+    <div class="rates-block">
+      <div class="rates-block-title">Slope premiums <span class="rates-block-subtitle">— added to labour ($/ft²)</span></div>
+      <div class="rates-grid4">
+        <div class="rates-field"><label>Low / flat</label><input type="number" id="r-slope-low" step="0.25" value="0.00" oninput="calc()"></div>
+        <div class="rates-field"><label>Standard</label><input type="number" id="r-slope-std" step="0.25" value="0.00" oninput="calc()"></div>
+        <div class="rates-field"><label>Steep</label><input type="number" id="r-slope-steep" step="0.25" value="0.75" oninput="calc()"></div>
+        <div class="rates-field"><label>Very steep</label><input type="number" id="r-slope-vsteep" step="0.25" value="1.75" oninput="calc()"></div>
+      </div>
+    </div>
+
+    <!-- Storey premiums -->
+    <div class="rates-block">
+      <div class="rates-block-title">Storey premiums <span class="rates-block-subtitle">— added to labour ($/ft²)</span></div>
+      <div class="rates-grid3">
+        <div class="rates-field"><label>1 storey (base)</label><input type="number" value="0.00" disabled style="opacity:0.4;cursor:not-allowed"></div>
+        <div class="rates-field"><label>2nd storey add</label><input type="number" id="r-s2" step="0.25" value="0.25" oninput="calc()"></div>
+        <div class="rates-field"><label>3rd storey add</label><input type="number" id="r-s3" step="0.25" value="0.50" oninput="calc()"></div>
+      </div>
+    </div>
+
+    <!-- Travel -->
+    <div class="rates-block">
+      <div class="rates-block-title">Travel</div>
+      <div class="rates-grid2">
+        <div class="rates-field"><label>Cost per km ($/km)</label><input type="number" id="r-km" step="0.10" value="1.50" oninput="calc()"></div>
+        <div class="rates-field"><label>Minimum travel charge ($)</label><input type="number" id="r-km-min" step="5" value="0" oninput="calc()"></div>
+      </div>
+    </div>
+
+    <!-- Payment terms -->
+    <div class="rates-block">
+      <div class="rates-block-title">Payment terms <span class="rates-block-subtitle">— printed on every customer quote</span></div>
+      <div class="rates-field">
+        <label>Edit payment terms text</label>
+        <textarea id="r-payment-terms">50% deposit required before work begins. Remaining 50% due upon completion of the project. Payment accepted by cheque, e-transfer, or cash. All prices are in Canadian dollars and are subject to applicable taxes.</textarea>
+      </div>
+    </div>
+
+    <div class="modal-lg-footer">
+      <button class="save-rates-btn" onclick="saveRatesToCloud()">Save all settings</button>
+      <span class="save-msg" id="saveMsg">✓ Saved</span>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Storage -->
+<script>
+  // ── localStorage keys ──────────────────────────────────────
+  const LS_SETTINGS = 'steel-estimator-settings';
+  const LS_ESTIMATES = 'steel-estimator-estimates';
+
+  const RATE_IDS = [
+    'r-mat-corrugated','r-markup-corrugated','r-labour-corrugated',
+    'r-mat-standing',  'r-markup-standing',  'r-labour-standing',
+    'r-mat-shingle',   'r-markup-shingle',   'r-labour-shingle',
+    'r-valley','r-vent','r-sky','r-chimney','r-t1','r-t2',
+    'r-slope-low','r-slope-std','r-slope-steep','r-slope-vsteep',
+    'r-s2','r-s3','r-km','r-km-min'
+  ];
+  const DEFAULTS = {
+    'r-mat-corrugated':3.50,'r-markup-corrugated':20,'r-labour-corrugated':3.50,
+    'r-mat-standing':6.00,  'r-markup-standing':20,  'r-labour-standing':7.00,
+    'r-mat-shingle':5.00,   'r-markup-shingle':20,   'r-labour-shingle':5.00,
+    'r-valley':18,'r-vent':75,'r-sky':200,'r-chimney':200,'r-t1':0.65,'r-t2':1.15,
+    'r-slope-low':0,'r-slope-std':0,'r-slope-steep':0.75,'r-slope-vsteep':1.75,
+    'r-s2':0.25,'r-s3':0.50,'r-km':1.50,'r-km-min':0
+  };
+
+  function setSync(msg){ const el=document.getElementById('syncStatus'); if(el) el.textContent=msg; }
+
+  // Must be declared before loadSettings runs
+  window._logoDataUrl = '';
+  window._quoteProjectName = '';
+
+  // Load all settings from localStorage on page open
+  function loadSettings(){
+    try {
+      const raw = localStorage.getItem(LS_SETTINGS);
+      if(raw){
+        const d = JSON.parse(raw);
+        RATE_IDS.forEach(id=>{ if(d[id]!==undefined) document.getElementById(id).value=d[id]; });
+        if(d['payment-terms']) document.getElementById('r-payment-terms').value=d['payment-terms'];
+        if(d['company-name'])  document.getElementById('r-company-name').value=d['company-name'];
+        if(d['company-tag'])   document.getElementById('r-company-tag').value=d['company-tag'];
+        if(d['logo-file']){
+          document.getElementById('r-logo-file').value=d['logo-file'];
+          previewLogoFile();
+        }
+        setSync('Settings loaded ✓');
+      } else { setSync('Using default rates'); }
+    } catch(e){ setSync('Could not load saved settings'); }
+    window.calc();
+  }
+
+  // Save all admin settings to localStorage
+  window.saveRatesToCloud = function(){
+    const settings={};
+    RATE_IDS.forEach(id=>{ settings[id]=parseFloat(document.getElementById(id).value)||DEFAULTS[id]; });
+    settings['payment-terms'] = document.getElementById('r-payment-terms').value.trim();
+    settings['company-name']  = document.getElementById('r-company-name').value.trim();
+    settings['company-tag']   = document.getElementById('r-company-tag').value.trim();
+    settings['logo-file']     = document.getElementById('r-logo-file').value.trim();
+    try {
+      localStorage.setItem(LS_SETTINGS, JSON.stringify(settings));
+      const msg=document.getElementById('saveMsg');
+      msg.classList.add('show'); setTimeout(()=>msg.classList.remove('show'),2500);
+      setSync('Settings saved ✓');
+    } catch(e){
+      // localStorage can fail if storage is full (rare — logo is the most likely culprit)
+      alert('Could not save settings. If you uploaded a large logo, try a smaller image.');
+    }
+  };
+
+  loadSettings();
+</script>
+
+<script>
+  const ADMIN_PW='roof2024';
+  let isAdmin=false;
+  window.currentSlope='low';
+  // NOTE: _logoDataUrl not used — logo is a filename loaded directly from GitHub
+
+  const SLOPE_NOTES={
+    low:'Low slope steel roofing requires a minimum 3/12 pitch — confirm panel manufacturer specs.',
+    std:'',
+    steep:'Steep slope requires safety equipment, staging, and increases labour time significantly.',
+    vsteep:'Very steep slope: major labour premium, fall-arrest systems required, extended project timeline.'
+  };
+  const PROFILE_LABELS={corrugated:'Corrugated / R-panel',standing:'Standing seam',shingle:'Steel shingle / tile'};
+
+  function rv(id){ return parseFloat(document.getElementById(id).value)||0; }
+  function fmt(n){ return '$'+Math.round(n).toLocaleString('en-CA'); }
+
+  window.setSlope=function(el,s){
+    document.querySelectorAll('.slope-btn').forEach(b=>b.classList.remove('active'));
+    el.classList.add('active'); window.currentSlope=s;
+    const nb=document.getElementById('slopeNote'),note=SLOPE_NOTES[s];
+    if(note){nb.textContent=note;nb.classList.remove('hidden');}else{nb.classList.add('hidden');}
+    calc();
+  };
+
+  function computeCosts(){
+    const sqft=parseFloat(document.getElementById('sqft').value)||0;
+    const storeys=parseInt(document.getElementById('storeys').value)||1;
+    const profile=document.getElementById('profile').value;
+    const km=parseFloat(document.getElementById('km').value)||0;
+    const days=parseInt(document.getElementById('days').value)||1;
+    const vents=parseInt(document.getElementById('vents').value)||0;
+    const valleyFt=parseFloat(document.getElementById('valleys').value)||0;
+    const skylights=parseInt(document.getElementById('skylights').value)||0;
+    const chimneys=parseInt(document.getElementById('chimneys').value)||0;
+    const tearoff=parseInt(document.getElementById('tearoff').value)||0;
+    const matCostRaw=rv('r-mat-'+profile), markup=rv('r-markup-'+profile), labourBase=rv('r-labour-'+profile);
+    const slopeAdj=rv('r-slope-'+window.currentSlope);
+    const storeyAdj=storeys===2?rv('r-s2'):storeys===3?rv('r-s3'):0;
+    const tearoffRate=tearoff===1?rv('r-t1'):tearoff===2?rv('r-t2'):0;
+    const kmRate=rv('r-km'), kmMin=rv('r-km-min');
+    const matBase=sqft*matCostRaw, matMarkupAmt=matBase*(markup/100);
+    const labourCost=sqft*labourBase, slopeCost=sqft*slopeAdj, storeyCost=sqft*storeyAdj, tearoffCost=sqft*tearoffRate;
+    const ventCost=vents*rv('r-vent'), valleyCost=valleyFt*rv('r-valley'), skylightCost=skylights*rv('r-sky'), chimneyCost=chimneys*rv('r-chimney');
+    const travelRaw=km*kmRate*days, travelCost=km>0?Math.max(travelRaw,kmMin):0;
+    const total=matBase+matMarkupAmt+labourCost+slopeCost+storeyCost+tearoffCost+ventCost+valleyCost+skylightCost+chimneyCost+travelCost;
+    return {sqft,storeys,profile,km,days,vents,valleyFt,skylights,chimneys,tearoff,
+      matCostRaw,markup,labourBase,matBase,matMarkupAmt,labourCost,slopeCost,storeyCost,tearoffCost,
+      ventCost,valleyCost,skylightCost,chimneyCost,travelRaw,travelCost,kmRate,kmMin,total,
+      slopeAdj,storeyAdj,tearoffRate};
+  }
+
+  window.calc=function(){
+    const c=computeCosts();
+    const rows=[
+      {header:'Materials cost'},
+      ['Materials — '+PROFILE_LABELS[c.profile]+' ('+c.sqft.toLocaleString()+' ft² × $'+c.matCostRaw.toFixed(2)+')',fmt(c.matBase),'neutral'],
+      c.markup>0?['Markup ('+c.markup+'%)','+'+fmt(c.matMarkupAmt),'add']:null,
+      {header:'Labour'},
+      ['Base labour — '+PROFILE_LABELS[c.profile]+' ('+c.sqft.toLocaleString()+' ft² × $'+c.labourBase.toFixed(2)+')',fmt(c.labourCost),'neutral'],
+      c.slopeCost>0?['Slope premium ('+window.currentSlope+') +$'+c.slopeAdj.toFixed(2)+'/ft²','+'+fmt(c.slopeCost),'add']:null,
+      c.storeyCost>0?['Storey premium ('+c.storeys+' storey) +$'+c.storeyAdj.toFixed(2)+'/ft²','+'+fmt(c.storeyCost),'add']:null,
+      c.tearoffCost>0?['Roof removal ('+c.tearoff+' layer'+(c.tearoff>1?'s':'')+') +$'+c.tearoffRate.toFixed(2)+'/ft²','+'+fmt(c.tearoffCost),'add']:null,
+      c.vents>0?['Vent pipe flashing ('+c.vents+' × $'+rv('r-vent')+')','+'+fmt(c.ventCost),'add']:null,
+      c.valleyFt>0?['Valley/hip flashing ('+c.valleyFt+' lin ft × $'+rv('r-valley')+')','+'+fmt(c.valleyCost),'add']:null,
+      c.skylights>0?['Skylight flashing ('+c.skylights+' × $'+rv('r-sky')+')','+'+fmt(c.skylightCost),'add']:null,
+      c.chimneys>0?['Chimney/penetration ('+c.chimneys+' × $'+rv('r-chimney')+')','+'+fmt(c.chimneyCost),'add']:null,
+      c.travelCost>0?{header:'Travel'}:null,
+      c.travelCost>0?['Travel ('+c.km+' km × $'+c.kmRate.toFixed(2)+'/km × '+c.days+' day'+(c.days>1?'s':'')+(c.travelRaw<c.kmMin?' — min applied':'')+')','+'+fmt(c.travelCost),'add']:null,
+    ].filter(Boolean);
+    document.getElementById('breakdown').innerHTML=rows.map(item=>{
+      if(item.header) return `<div class="result-section-header">${item.header}</div>`;
+      const[l,v,cls]=item;
+      return `<div class="result-row"><span class="result-label">${l}</span><span class="result-value ${cls}">${v}</span></div>`;
+    }).join('');
+    document.getElementById('total').textContent=fmt(c.total);
+  };
+
+  window.gatherData=function(name){
+    const c=computeCosts();
+    return {projectName:name,savedAt:new Date().toISOString(),...c,total:fmt(c.total)};
+  };
+
+  /* ── Logo — filename-based, loads from same folder as HTML ── */
+  window.previewLogoFile = function(){
+    const filename = document.getElementById('r-logo-file').value.trim();
+    const preview  = document.getElementById('logoPreview');
+    if(!filename){
+      preview.innerHTML='<div class="logo-placeholder">No logo</div>';
+      window._logoDataUrl='';
+      return;
+    }
+    const img = new Image();
+    img.onload  = function(){ preview.innerHTML=`<img src="${filename}" alt="Logo">`; window._logoDataUrl=filename; };
+    img.onerror = function(){ preview.innerHTML='<div class="logo-placeholder" style="color:#c0392b">Not found</div>'; window._logoDataUrl=''; };
+    img.src = filename;
+  };
+
+  /* ── Validate project name from main form ── */
+  function getProjectName(){
+    return document.getElementById('projectName').value.trim();
+  }
+
+  /* ── Save to localStorage helper ── */
+  function saveEstimateToStorage(data){
+    try {
+      const raw=localStorage.getItem(LS_ESTIMATES);
+      const estimates=raw?JSON.parse(raw):[];
+      estimates.unshift(data);
+      if(estimates.length>100) estimates.length=100;
+      localStorage.setItem(LS_ESTIMATES,JSON.stringify(estimates));
+      return true;
+    } catch(e){ return false; }
+  }
+
+  /* ── Working copy save (triggered from save choice modal) ── */
+  window.confirmInternalSave=function(){
+    const name=getProjectName();
+    if(!name){
+      document.getElementById('saveChoiceError').textContent='Please enter a customer / project name before saving.';
+      closeModal('modalSaveChoice');
+      document.getElementById('projectName').focus();
+      document.getElementById('projectName').style.borderColor='#3d4a52';
+      setTimeout(()=>document.getElementById('projectName').style.borderColor='',2500);
+      return;
+    }
+    document.getElementById('saveChoiceError').textContent='';
+    const ok=saveEstimateToStorage({...window.gatherData(name),type:'working',savedAt:new Date().toISOString()});
+    closeModal('modalSaveChoice');
+    window.showToast(ok?'Working copy saved — '+name:'Save failed — storage may be full');
+  };
+
+  /* ── Quote: save first, then open preview ── */
+  window.confirmQuoteAndPreview=function(){
+    const name=getProjectName();
+    if(!name){
+      document.getElementById('saveChoiceError').textContent='Please enter a customer / project name before saving.';
+      closeModal('modalSaveChoice');
+      document.getElementById('projectName').focus();
+      document.getElementById('projectName').style.borderColor='#3d4a52';
+      setTimeout(()=>document.getElementById('projectName').style.borderColor='',2500);
+      return;
+    }
+    document.getElementById('saveChoiceError').textContent='';
+    const c=computeCosts();
+    const quoteNum='Q-'+Date.now().toString().slice(-6);
+    saveEstimateToStorage({...window.gatherData(name),type:'quote',quoteNum,savedAt:new Date().toISOString()});
+    closeModal('modalSaveChoice');
+    buildAndShowQuote(name,quoteNum,c);
+  };
+
+  /* ── Build and display the quote document ── */
+  function buildAndShowQuote(name,quoteNum,c){
+    const company=document.getElementById('r-company-name').value.trim()||'Your Company Name';
+    const tag=document.getElementById('r-company-tag').value.trim();
+    const terms=document.getElementById('r-payment-terms').value.trim();
+    const today=new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
+    const logoFile = document.getElementById('r-logo-file').value.trim();
+    const logoHtml = logoFile
+      ? `<img class="q-logo" src="${logoFile}" alt="Logo">`
+      : `<div style="font-size:11px;color:#ccc;font-family:sans-serif">No logo set</div>`;
+    const SLOPE_LABELS={low:'Low / flat (2–4/12)',std:'Standard (4–7/12)',steep:'Steep (7–9/12)',vsteep:'Very steep (9/12+)'};
+    const scopeRows=[
+      ['Customer / project', name],
+      ['Panel type', PROFILE_LABELS[c.profile]],
+      ['Square footage', c.sqft.toLocaleString()+' ft²'],
+      c.storeys>1?['Storeys',c.storeys+' storeys']:null,
+      ['Roof slope', SLOPE_LABELS[window.currentSlope]||window.currentSlope],
+      c.valleyFt>0?['Valleys / hips',c.valleyFt+' linear ft']:null,
+      c.vents>0?['Vent pipe flashings',c.vents]:null,
+      c.skylights>0?['Skylights',c.skylights]:null,
+      c.chimneys>0?['Chimneys / penetrations',c.chimneys]:null,
+      c.tearoff>0?['Roof removal',c.tearoff+' layer'+(c.tearoff>1?'s':'')]:null,
+      c.km>0?['Travel',c.km+' km × '+c.days+' day'+(c.days>1?'s':'')]:null,
+    ].filter(Boolean);
+    const deposit=Math.round(c.total*0.5);
+    document.getElementById('quoteDoc').innerHTML=`
+      <div class="q-header">
+        <div class="q-logo-wrap">
+          ${logoHtml}
+          <div class="q-company">${company}</div>
+          ${tag?`<div class="q-company-tag">${tag}</div>`:''}
+        </div>
+        <div class="q-meta">
+          <div class="q-meta-label">Quote number</div>
+          <div class="q-meta-val">${quoteNum}</div>
+          <div class="q-meta-label">Date issued</div>
+          <div class="q-meta-val">${today}</div>
+        </div>
+      </div>
+      <div class="q-badge">PROJECT ESTIMATE</div>
+      <div class="q-scope">
+        ${scopeRows.map(([l,v])=>`<div class="q-scope-row"><span class="q-scope-label">${l}</span><span class="q-scope-val">${v}</span></div>`).join('')}
+      </div>
+      <div class="q-price-box">
+        <div>
+          <div class="q-price-label">Total project price</div>
+          <div class="q-price-note">Includes all materials, labour &amp; travel</div>
+        </div>
+        <div class="q-price-total">${fmt(c.total)}</div>
+      </div>
+      <div class="q-section-title">Payment terms</div>
+      <div class="q-terms">${terms||'Payment terms not set.'}</div>
+      <hr class="q-divider">
+      <div class="q-section-title">Deposit due to confirm booking</div>
+      <div style="font-size:22px;font-weight:700;color:var(--black);font-family:-apple-system,sans-serif;margin-top:6px">${fmt(deposit)}</div>
+      <div class="q-sig-block">
+        <div class="q-sig-line">Authorized signature &amp; date</div>
+        <div class="q-sig-line">Customer acceptance &amp; date</div>
+      </div>
+      <div class="q-footer">${company} · This estimate is valid for 30 days from the date of issue.<br>Pricing subject to change if site conditions differ from information provided.</div>
+    `;
+    document.getElementById('modalQuote').classList.add('open');
+  }
+
+  /* ── Modal controls ── */
+  window.openLock=function(){
+    if(isAdmin){openRatesModal();return;}
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwError').textContent='';
+    document.getElementById('modalAdmin').classList.add('open');
+    setTimeout(()=>document.getElementById('pwInput').focus(),50);
+  };
+  window.checkPw=function(){
+    if(document.getElementById('pwInput').value===ADMIN_PW){
+      isAdmin=true; closeModal('modalAdmin'); openRatesModal();
+    } else {
+      document.getElementById('pwError').textContent='Incorrect password. Try again.';
+      document.getElementById('pwInput').value=''; document.getElementById('pwInput').focus();
+    }
+  };
+  function openRatesModal(){ document.getElementById('modalRates').classList.add('open'); document.getElementById('lockLabel').textContent='Rates'; }
+  window.lockAdmin=function(){ isAdmin=false; document.getElementById('lockLabel').textContent='Admin'; };
+  window.closeModal=function(id){ document.getElementById(id).classList.remove('open'); };
+  window.openSaveChoice=function(){
+    document.getElementById('saveChoiceError').textContent='';
+    document.getElementById('modalSaveChoice').classList.add('open');
+  };
+  window.showToast=function(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
+  };
+
+  document.querySelectorAll('.modal-bg').forEach(bg=>{
+    bg.addEventListener('click',e=>{ if(e.target===bg) bg.classList.remove('open'); });
+  });
+
+  /* ── Reset all inputs to defaults ── */
+  window.resetCalc=function(){
+    document.getElementById('projectName').value='';
+    document.getElementById('sqft').value='';
+    document.getElementById('storeys').value='1';
+    document.getElementById('profile').value='standing';
+    document.getElementById('km').value='0';
+    document.getElementById('days').value='1';
+    document.getElementById('vents').value='0';
+    document.getElementById('valleys').value='0';
+    document.getElementById('skylights').value='0';
+    document.getElementById('chimneys').value='0';
+    document.getElementById('tearoff').value='0';
+    // Reset slope buttons to Low
+    document.querySelectorAll('.slope-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelector('.slope-btn').classList.add('active');
+    window.currentSlope='low';
+    document.getElementById('slopeNote').classList.add('hidden');
+    calc();
+  };
+
+  /* ── New estimate — confirm if unsaved ── */
+  window.confirmNewEstimate=function(){
+    const name=document.getElementById('projectName').value.trim();
+    if(!name){ window.resetCalc(); return; }
+    if(confirm('Start a new estimate? The current estimate for "'+name+'" will be cleared.\n\nMake sure you have saved it first.')){ window.resetCalc(); }
+  };
+
+  // Reset inputs cleanly on every page load
+  window.resetCalc();
+</script>
+</body>
+</html>
