@@ -1084,30 +1084,7 @@ async function checkContractorAccess(email) {
 // ============ END CONTRACTOR ACCESS ============
 
 
-function showMainContent() {
-  document.getElementById('auth-modal').classList.add('hidden');
-  // Don't show tool yet — wait for contractor check
-}
 
-function initializeCalculator() {
-  // Check contractor access using saved email
-  try {
-    const savedAuth = JSON.parse(localStorage.getItem('smsCalcAuth') || '{}');
-    if (savedAuth.email) {
-      checkContractorAccess(savedAuth.email);
-    }
-  } catch(e) {}
-}
-
-// On verifyCode success, call checkContractorAccess with the authenticated email
-// Override the auth flow to add contractor check
-const _origVerify = window.verifyCode;
-
-// Check auth on load
-if (checkAuth()) {
-  document.getElementById('auth-modal').classList.add('hidden');
-  initializeCalculator();
-}
 </script>
 
 <script>
