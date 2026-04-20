@@ -16,7 +16,7 @@
       --blue-500: #3b82f6;
       --blue-100: #dbeafe;
       --blue-50:  #eff6ff;
-      --slate-900: #0f172a;
+      --slate-900: #1e2d45;
       --slate-800: #1e293b;
       --slate-700: #334155;
       --slate-500: #64748b;
@@ -102,6 +102,9 @@
       text-transform: uppercase;
       color: var(--blue-500);
     }
+
+    .logo-wrap:hover .logo-img { box-shadow: 0 0 32px rgba(37,99,235,0.5); border-color: rgba(59,130,246,0.7); }
+    .logo-wrap:hover .brand-name { color: #60a5fa; }
 
     .brand-tagline {
       font-size: 12px;
@@ -285,13 +288,13 @@
   <div class="page">
 
     <header>
-      <div class="logo-wrap">
+      <a href="https://smsupply.ca" target="_blank" rel="noopener" class="logo-wrap" style="text-decoration:none;">
         <img src="logo.png" alt="Summit Metal Supply" class="logo-img">
         <div class="brand">
           <div class="brand-name">Summit Metal Supply</div>
-          <div class="brand-tagline">smsupply.ca</div>
+          <div class="brand-tagline">smsupply.ca <span style="font-size:11px;color:#3b82f6;">(click to view website)</span></div>
         </div>
-      </div>
+      </a>
       <h1>Professional <span>Roofing Tools</span></h1>
       <div class="divider"></div>
       <p class="subtitle">Calculators and estimators for contractors and homeowners</p>
