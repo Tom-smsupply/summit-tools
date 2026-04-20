@@ -473,10 +473,7 @@ function checkAuth() {
   return false;
 }
 
-function showMainContent() {
-  document.getElementById('auth-modal').classList.add('hidden');
-  document.getElementById('main-content').classList.remove('hidden');
-}
+// showMainContent defined above
 
 function requestCode() {
   const emailInput = document.getElementById('auth-email');
@@ -703,10 +700,7 @@ async function checkContractorAccess(email) { // returns promise
 // ============ END CONTRACTOR ACCESS ============
 
   // Initialize calculator — called after contractor access confirmed
-  function initializeCalculator() {
-    loadSettings();
-    window.resetCalc();
-  }
+  // initializeCalculator defined above
 
   // Called after login to check contractor access
   function checkAndInitialize(email) {
