@@ -533,6 +533,10 @@ async function checkContractorAccess(email) {
   function showTool() {
     document.getElementById('access-denied').style.display = 'none';
     document.getElementById('tool-content').style.display = '';
+    const mc = document.getElementById('main-content');
+    if (mc) mc.style.display = 'flex';
+    if (typeof loadSettings === 'function') loadSettings();
+    if (typeof window.resetCalc === 'function') window.resetCalc();
   }
   function showDenied() {
     document.getElementById('access-denied').style.display = 'flex';
