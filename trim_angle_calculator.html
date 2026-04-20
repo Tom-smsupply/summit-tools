@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Summit Metal Supply – Trim Angle Calculator</title>
+<style>
+body{margin:0;padding:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f5f5;color:#222}
+header{background:#222;color:#fff;padding:16px 20px;text-align:center}
+header h1{margin:0;font-size:24px;letter-spacing:.03em}
+header h2{margin:4px 0 0;font-size:16px;font-weight:400;opacity:.9}
+main{max-width:900px;margin:20px auto 40px;padding:16px}
+.card{background:#fff;border-radius:8px;padding:16px 18px 20px;box-shadow:0 2px 6px rgba(0,0,0,.08);margin-bottom:16px}
+.card h3{margin-top:0;font-size:18px;border-bottom:1px solid #eee;padding-bottom:6px;margin-bottom:12px}
+label{display:block;font-size:14px;margin-bottom:4px}
+select,input[type=number]{font-size:14px;padding:6px 8px;border-radius:4px;border:1px solid #ccc;width:100%;box-sizing:border-box}
+.row{display:flex;flex-wrap:wrap;gap:12px}
+.col{flex:1 1 140px}
+button{padding:8px 16px;font-size:14px;border-radius:4px;border:none;background:#222;color:#fff;cursor:pointer;margin-top:8px}
+button:hover{background:#444}
+.results{margin-top:10px;font-size:14px;line-height:1.6}
+.results p{margin:2px 0}
+.svg-container{margin-top:10px;border:1px solid #ddd;border-radius:6px;background:#fafafa;padding:6px;text-align:center}
+.note{font-size:12px;color:#666;margin-top:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Summit Metal Supply</h1>
+  <h2>Trim Angle Calculator</h2>
+</header>
+<main>
+  <div class="card">
+    <h3>Inputs</h3>
+    <div class="row">
+      <div class="col" style="flex:2 1 180px">
+        <label><strong>Trim type</strong></label>
+        <select id="trimType">
+          <option value="endwall">End-wall flashing</option>
+          <option value="eave">Eave trim</option>
+          <option value="transition_gambrel">Transition / Gambrel flashing</option>
+          <option value="ridge">Ridge cap</option>
+        </select>
+      </div>
+      <div class="col">
+        <label id="p1label"><strong>Pitch – rise (per 12")</strong></label>
+        <input type="number" id="rise1" value="4" step="0.25" min="0.25">
+      </div>
+      <div class="col" id="rise2Wrap" style="display:none">
+        <label><strong>Pitch 2 – rise (per 12")</strong></label>
+        <input type="number" id="rise2" value="8" step="0.25" min="0.25">
+      </div>
+    </div>
+    <button onclick="calculate()">Calculate angles</button>
+    <div class="note">Rise per 12" of run. Example: 4/12 pitch → enter 4.</div>
+  </div>
+  <div class="card">
+    <h3>Results</h3>
+    <div id="results" class="results"><p style="color:#aaa">Enter a pitch and click "Calculate angles".</p></div>
+    <div class="svg-container" id="svgContainer"></div>
+    <div class="note">Amber thick line = paint side (exposed face). &nbsp; Grey thin line = back/hidden side.</div>
+  </div>
+</main>
+
+<script>
+const NS="http://www.w3.org/2000/svg";
+function pitchDeg(r){return Math.atan(r/12)*180/Math.PI;}
+function fmt(a){return isFinite(a)?a.toFixed(2)+"°":"—";}
+function el(tag,attrs){const e=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);return e;}
+function makeSVG(w,h){return el("svg",{width:"100%",viewBox:`0 0 ${w} ${h}`,xmlns:NS});}
+function sline(svg,x1,y1,x2,y2,color,w){svg.appendChild(el("line",{x1,y1,x2,y2,stroke:color,"stroke-width":w||1.5,"stroke-linecap":"round"}));}
+function stxt(svg,x,y,str,opts={}){
+  const t=el("text",{x,y,"text-anchor":opts.anchor||"middle","dominant-baseline":"central",
+    "font-size":opts.size||12,"font-family":"system-ui,sans-serif","font-weight":opts.weight||400,fill:opts.fill||"#444"});
+  t.textContent=str;svg.appendChild(t);
+}
+function sarc(svg,cx,cy,r,a1deg,a2deg){
+  const a1=a1deg*Math.PI/180,a2=a2deg*Math.PI/180;
+  const x1=cx+r*Math.cos(a1),y1=cy-r*Math.sin(a1);
+  const x2=cx+r*Math.cos(a2),y2=cy-r*Math.sin(a2);
+  const large=((a2deg-a1deg+360)%360)>180?1:0;
+  svg.appendChild(el("path",{d:`M${x1} ${y1} A${r} ${r} 0 ${large} 0 ${x2} ${y2}`,
+    fill:"none",stroke:"#999","stroke-width":1,"stroke-dasharray":"4 3"}));
+}
+
+// ── END-WALL FLASHING ─────────────────────────────────────────────
+// Bend point mid-left. Wall leg goes straight UP. Roof leg goes down-right at pitch.
+// Paint = inside of bend: right face of wall leg + top face of roof leg.
+// Angle label above.
+function drawEndwall(rise){
+  const svg=makeSVG(380,270);
+  const deg=pitchDeg(rise), rad=deg*Math.PI/180;
+  const bx=100, by=160, wallLen=120, roofLen=200, lipLen=16, off=5;
+  const wx=bx, wy=by-wallLen;
+  const rfx=bx+roofLen*Math.cos(rad), rfy=by+roofLen*Math.sin(rad);
+  const lipx=rfx, lipy=rfy+lipLen;
+
+  sline(svg,wx,wy,bx,by,"#ccc",2);
+  sline(svg,bx,by,rfx,rfy,"#ccc",2);
+  sline(svg,rfx,rfy,lipx,lipy,"#ccc",2);
+
+  // paint right face of wall leg
+  sline(svg,bx+off,by,wx+off,wy,"#BA7517",4.5);
+  // paint top face of roof leg
+  sline(svg,bx+off*Math.sin(rad),by-off*Math.cos(rad),
+           rfx+off*Math.sin(rad),rfy-off*Math.cos(rad),"#BA7517",4.5);
+  // drip lip inner face
+  sline(svg,rfx-off,rfy,lipx-off,lipy,"#BA7517",4.5);
+
+  // arc inside bend: sweeps from roof-down-right (-deg) to wall-up (90°) through 0°
+  const machAngle=90-deg;
+  sarc(svg,bx,by,40,-deg,90);
+
+  // label above
+  stxt(svg,bx+80,wy-10,fmt(machAngle),      {size:13,fill:"#555",weight:600});
+  stxt(svg,bx+80,wy+6, "complement angle",  {size:10,fill:"#999"});
+
+  stxt(svg,wx+off+32,(by+wy)/2,"painted",{size:11,fill:"#BA7517",anchor:"start"});
+  stxt(svg,(bx+rfx)/2+off*Math.sin(rad),(by+rfy)/2-off*Math.cos(rad)-14,"painted",{size:11,fill:"#BA7517"});
+  return svg;
+}
+
+// ── EAVE TRIM ─────────────────────────────────────────────────────
+// Bend point mid-right. Roof leg goes up-left at pitch. Fascia leg goes straight down.
+// Paint = top of roof leg + right (outer) face of fascia leg.
+// Arc inside bend. Angle label below.
+function drawEave(rise){
+  const svg=makeSVG(380,260);
+  const deg=pitchDeg(rise), rad=deg*Math.PI/180;
+  const bx=220, by=120, roofLen=150, fasciaLen=70, off=5;
+  const rx=bx-roofLen*Math.cos(rad), ry=by-roofLen*Math.sin(rad);
+  const fx=bx, fy=by+fasciaLen;
+
+  sline(svg,rx,ry,bx,by,"#ccc",2);
+  sline(svg,bx,by,fx,fy,"#ccc",2);
+
+  sline(svg,bx+off*Math.sin(rad),by-off*Math.cos(rad),
+           rx+off*Math.sin(rad),ry-off*Math.cos(rad),"#BA7517",4.5);
+  sline(svg,bx+off,by,fx+off,fy,"#BA7517",4.5);
+
+  sarc(svg,bx,by,40,180-deg,270);
+
+  const insideAngle=90-deg;
+  stxt(svg,bx+30,fy+30,    fmt(insideAngle),   {size:13,fill:"#555",weight:600});
+  stxt(svg,bx+30,fy+46,    "complement angle", {size:10,fill:"#999"});
+  stxt(svg,(rx+off*Math.sin(rad)+bx+off*Math.sin(rad))/2,
+           (ry-off*Math.cos(rad)+by-off*Math.cos(rad))/2-14,"painted",{size:11,fill:"#BA7517"});
+  stxt(svg,fx+off+32,(by+fy)/2,"painted",{size:11,fill:"#BA7517",anchor:"start"});
+  return svg;
+}
+
+// ── RIDGE CAP ─────────────────────────────────────────────────────
+// Peak at top. Legs go down at pitch. Paint on top. Arc on underside.
+// Angle = 2 * roof angle.
+function drawRidge(rise){
+  const svg=makeSVG(380,270);
+  const deg=pitchDeg(rise), rad=deg*Math.PI/180;
+  const cx=190, cy=60, len=120, off=5;
+  const lx=cx-len*Math.cos(rad), ly=cy+len*Math.sin(rad);
+  const rx=cx+len*Math.cos(rad), ry=cy+len*Math.sin(rad);
+
+  sline(svg,cx,cy,lx,ly,"#ccc",2);
+  sline(svg,cx,cy,rx,ry,"#ccc",2);
+
+  const sinR=Math.sin(rad), cosR=Math.cos(rad);
+  sline(svg,cx-off*sinR,cy-off*cosR,lx-off*sinR,ly-off*cosR,"#BA7517",4.5);
+  sline(svg,cx+off*sinR,cy-off*cosR,rx+off*sinR,ry-off*cosR,"#BA7517",4.5);
+
+  const bendAngle=2*deg;
+  sarc(svg,cx,cy,40,180+deg,360-deg);
+
+  const labelY=Math.max(ly,ry)+35;
+  stxt(svg,cx,labelY,    fmt(bendAngle),    {size:13,fill:"#555",weight:600});
+  stxt(svg,cx,labelY+16,"complement angle", {size:10,fill:"#999"});
+  stxt(svg,(cx-off*sinR+lx-off*sinR)/2,(cy-off*cosR+ly-off*cosR)/2-14,"painted",{size:11,fill:"#BA7517"});
+  return svg;
+}
+
+// ── TRANSITION / GAMBREL ──────────────────────────────────────────
+// Left leg goes up-left at pitch1. Right leg goes down-right at pitch2.
+// Gambrel (p1<p2): arc+label below. Transition (p1>p2): arc+label above.
+function drawTG(rise1,rise2){
+  const svg=makeSVG(400,270);
+  const deg1=pitchDeg(rise1), rad1=deg1*Math.PI/180;
+  const deg2=pitchDeg(rise2), rad2=deg2*Math.PI/180;
+  const len=140, off=5;
+  const bendAngle=Math.abs(deg1-deg2);
+  const isGambrel=rise1<rise2;
+  const bx=190, by=150;
+  const lx=bx-len*Math.cos(rad1), ly=by-len*Math.sin(rad1);
+  const rx=bx+len*Math.cos(rad2), ry=by+len*Math.sin(rad2);
+
+  sline(svg,lx,ly,bx,by,"#ccc",2);
+  sline(svg,bx,by,rx,ry,"#ccc",2);
+
+  sline(svg,bx+off*Math.sin(rad1),by-off*Math.cos(rad1),
+           lx+off*Math.sin(rad1),ly-off*Math.cos(rad1),"#BA7517",4.5);
+  sline(svg,bx+off*Math.sin(rad2),by-off*Math.cos(rad2),
+           rx+off*Math.sin(rad2),ry-off*Math.cos(rad2),"#BA7517",4.5);
+
+  if(isGambrel){
+    sarc(svg,bx,by,40,180-deg1,360-deg2);
+    const labelY=Math.max(ly,ry)+30;
+    stxt(svg,bx,labelY,    fmt(bendAngle),{size:13,fill:"#555",weight:600});
+    stxt(svg,bx,labelY+16,"bend angle",  {size:10,fill:"#999"});
+  } else {
+    sarc(svg,bx,by,40,-deg2,180-deg1);
+    const labelY=Math.min(ly,ry)-30;
+    stxt(svg,bx,labelY,    fmt(bendAngle),{size:13,fill:"#555",weight:600});
+    stxt(svg,bx,labelY+16,"bend angle",  {size:10,fill:"#999"});
+  }
+
+  stxt(svg,lx,ly-16,rise1+"/12",{size:12,fill:"#555"});
+  stxt(svg,rx,ry+16,rise2+"/12",{size:12,fill:"#555"});
+  stxt(svg,(bx+lx)/2+off*Math.sin(rad1),(by+ly)/2-off*Math.cos(rad1)-14,"painted",{size:11,fill:"#BA7517"});
+  stxt(svg,(bx+rx)/2+off*Math.sin(rad2),(by+ry)/2-off*Math.cos(rad2)-14,"painted",{size:11,fill:"#BA7517"});
+  return svg;
+}
+
+// ── CALCULATE ─────────────────────────────────────────────────────
+function calculate(){
+  const type=document.getElementById("trimType").value;
+  const rise1=parseFloat(document.getElementById("rise1").value||0);
+  const rise2=parseFloat(document.getElementById("rise2").value||0);
+  const resDiv=document.getElementById("results");
+  const svgDiv=document.getElementById("svgContainer");
+  resDiv.innerHTML=""; svgDiv.innerHTML="";
+  const deg1=pitchDeg(rise1), mac1=90-deg1;
+  let html="", svg=null;
+
+  if(type==="endwall"){
+    html=`<p><strong>Trim type:</strong> End-wall flashing</p>
+          <p><strong>Pitch:</strong> ${rise1}/12 &nbsp;|&nbsp; Roof angle: ${fmt(deg1)} &nbsp;|&nbsp; Complement angle: ${fmt(mac1)}</p>`;
+    svg=drawEndwall(rise1);
+  } else if(type==="eave"){
+    html=`<p><strong>Trim type:</strong> Eave trim</p>
+          <p><strong>Pitch:</strong> ${rise1}/12 &nbsp;|&nbsp; Roof angle: ${fmt(deg1)} &nbsp;|&nbsp; Complement angle: ${fmt(mac1)}</p>`;
+    svg=drawEave(rise1);
+  } else if(type==="ridge"){
+    const bend=2*deg1;
+    html=`<p><strong>Trim type:</strong> Ridge cap</p>
+          <p><strong>Pitch:</strong> ${rise1}/12 &nbsp;|&nbsp; Roof angle: ${fmt(deg1)} &nbsp;|&nbsp; Complement angle: ${fmt(bend)}</p>`;
+    svg=drawRidge(rise1);
+  } else if(type==="transition_gambrel"){
+    const deg2=pitchDeg(rise2), mac2=90-deg2;
+    const kind=rise1>rise2?"Transition flashing":"Gambrel flashing";
+    const bendAngle=Math.abs(deg1-deg2);
+    html=`<p><strong>Type:</strong> ${kind}</p>
+          <p><strong>Pitch 1 (left):</strong> ${rise1}/12 &nbsp;|&nbsp; Roof angle: ${fmt(deg1)} &nbsp;|&nbsp; Complement: ${fmt(mac1)}</p>
+          <p><strong>Pitch 2 (right):</strong> ${rise2}/12 &nbsp;|&nbsp; Roof angle: ${fmt(deg2)} &nbsp;|&nbsp; Complement: ${fmt(mac2)}</p>
+          <p><strong>Bend angle between pitches:</strong> ${fmt(bendAngle)}</p>`;
+    svg=drawTG(rise1,rise2);
+  }
+  resDiv.innerHTML=html;
+  if(svg) svgDiv.appendChild(svg);
+}
+
+document.getElementById("trimType").addEventListener("change",function(){
+  const isTG=this.value==="transition_gambrel";
+  document.getElementById("rise2Wrap").style.display=isTG?"block":"none";
+  document.getElementById("p1label").textContent=isTG?"Pitch 1 – rise (per 12\")":"Pitch – rise (per 12\")";
+});
+
+calculate();
+</script>
+</body>
+</html>
