@@ -432,28 +432,14 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // Override body styles when authenticated - remove flex centering from body, handled by main-content wrapper
-  function showMainContent() {
-    document.getElementById('auth-modal').classList.add('hidden');
-    document.body.style.display = 'block';
-    document.body.style.padding = '0';
-    // main-content shown inside tool-content once contractor check passes
-    document.getElementById('main-content').classList.remove('hidden');
-    document.getElementById('main-content').style.display = 'flex';
-  }
-
-// ============ AUTHENTICATION ============
-// EmailJS credentials
+// ============ AUTH + CONTRACTOR ACCESS ============
 const EMAILJS_PUBLIC_KEY = '6CjE-syAyvsYIaScJ';
 const EMAILJS_SERVICE_ID = 'service_wtzvd7o';
 const EMAILJS_TEMPLATE_ID = 'template_49a7y4n';
-
-// Blocked email domains
 const BLOCKED_DOMAINS = ['steeltile.com'];
+const CONTRACTORS_URL = 'https://raw.githubusercontent.com/tom-smsupply/summit-tools/main/contractors.json';
 
-// Initialize EmailJS
 emailjs.init(EMAILJS_PUBLIC_KEY);
-
 let isAuthenticated = false;
 
 function checkAuth() {
@@ -461,32 +447,24 @@ function checkAuth() {
   if (savedAuth) {
     try {
       const authData = JSON.parse(savedAuth);
-      // Check if auth is less than 30 days old
       if (Date.now() - authData.timestamp < 30 * 24 * 60 * 60 * 1000) {
         isAuthenticated = true;
         return true;
       }
-    } catch (e) {
-      localStorage.removeItem('smsCalcAuth');
-    }
+    } catch(e) { localStorage.removeItem('smsCalcAuth'); }
   }
   return false;
 }
-
-// showMainContent defined above
 
 function requestCode() {
   const emailInput = document.getElementById('auth-email');
   const email = emailInput.value.trim().toLowerCase();
   const btn = document.getElementById('request-btn');
-  
   if (!email || !email.includes('@') || !email.includes('.')) {
     alert('Please enter a valid email address');
     emailInput.focus();
     return;
   }
-  
-  // Check for blocked domains
   for (const domain of BLOCKED_DOMAINS) {
     if (email.endsWith('@' + domain)) {
       document.getElementById('email-step').classList.add('hidden');
@@ -494,44 +472,28 @@ function requestCode() {
       return;
     }
   }
-  
-  // Generate 6-digit code
   const code = Math.floor(100000 + Math.random() * 900000).toString();
-  
-  // Store code temporarily with 10-minute expiry
   sessionStorage.setItem('authCode', code);
   sessionStorage.setItem('authEmail', email);
   sessionStorage.setItem('authCodeTime', Date.now().toString());
-  
-  // Disable button while sending
   btn.disabled = true;
   btn.innerText = 'Sending...';
-  
-  // Send email via EmailJS
-  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-    to_email: email,
-    code: code
-  })
+  emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { to_email: email, code: code })
   .then(function() {
-    // Show code entry form
     document.getElementById('sent-email').innerText = email;
     document.getElementById('email-step').classList.add('hidden');
     document.getElementById('code-step').classList.remove('hidden');
     document.getElementById('auth-code').focus();
   })
   .catch(function(error) {
-    // EmailJS returns an object like {status: 400, text: "..."} — extract readable info
     const status = error && error.status ? error.status : '';
-    const text = error && error.text ? error.text : (typeof error === 'string' ? error : JSON.stringify(error));
+    const text = error && error.text ? error.text : JSON.stringify(error);
     console.error('EmailJS error:', status, text);
-
     let msg = 'Failed to send access code.';
-    if (status === 400) msg += ' Check that your EmailJS template and service ID are correct.';
-    else if (status === 401 || status === 403) msg += ' EmailJS authentication failed — check your public key.';
-    else if (status === 429) msg += ' Too many requests — please wait a minute and try again.';
-    else if (status === 0 || !status) msg += ' Network error — check your internet connection.';
-    else msg += ' (Error ' + status + ': ' + text + ')';
-
+    if (status === 400) msg += ' Check EmailJS template/service ID.';
+    else if (status === 401 || status === 403) msg += ' EmailJS authentication failed.';
+    else if (status === 429) msg += ' Too many requests — wait a minute and try again.';
+    else msg += ' Network error — check your internet connection.';
     alert(msg);
     btn.disabled = false;
     btn.innerText = 'Request Access Code';
@@ -543,9 +505,6 @@ function verifyCode() {
   const storedCode = sessionStorage.getItem('authCode');
   const codeTime = parseInt(sessionStorage.getItem('authCodeTime') || '0');
   const email = sessionStorage.getItem('authEmail');
-  const btn = document.getElementById('verify-btn');
-  
-  // Check if code is expired (10 minutes)
   if (Date.now() - codeTime > 10 * 60 * 1000) {
     alert('Code has expired. Please request a new one.');
     document.getElementById('email-step').classList.remove('hidden');
@@ -555,27 +514,16 @@ function verifyCode() {
     sessionStorage.removeItem('authCodeTime');
     return;
   }
-  
   if (enteredCode === storedCode) {
     isAuthenticated = true;
-    localStorage.setItem('smsCalcAuth', JSON.stringify({
-      email: email,
-      timestamp: Date.now()
-    }));
-    
-    // Clean up
+    localStorage.setItem('smsCalcAuth', JSON.stringify({ email: email, timestamp: Date.now() }));
     sessionStorage.removeItem('authCode');
     sessionStorage.removeItem('authEmail');
     sessionStorage.removeItem('authCodeTime');
-    
-    // Show main content
-    showMainContent();
-    
-    // Check contractor access
+    document.getElementById('auth-modal').classList.add('hidden');
+    document.body.style.display = 'block';
+    document.body.style.padding = '0';
     checkContractorAccess(email);
-    
-    // Initialize calculator
-    initializeCalculator();
   } else {
     alert('Invalid code. Please try again.');
     document.getElementById('auth-code').value = '';
@@ -583,154 +531,41 @@ function verifyCode() {
   }
 }
 
-
-
-// ============ CONTRACTOR ACCESS ============
-const CONTRACTORS_URL = 'https://raw.githubusercontent.com/tom-smsupply/summit-tools/main/contractors.json';
-
-async function checkContractorAccess(email) { // returns promise
+async function checkContractorAccess(email) {
   try {
     const res = await fetch(CONTRACTORS_URL + '?nocache=' + Date.now());
     const data = await res.json();
     const approved = (data.approved || []).map(e => e.toLowerCase());
     if (approved.includes(email.toLowerCase())) {
-      // Approved — show the tool
       document.getElementById('access-denied').style.display = 'none';
       document.getElementById('tool-content').style.display = '';
+      const mc = document.getElementById('main-content');
+      if (mc) { mc.classList.remove('hidden'); mc.style.display = 'flex'; }
+      // Initialize calculator now that tool is visible
+      if (typeof loadSettings === 'function') { loadSettings(); }
+      if (typeof window.resetCalc === 'function') { window.resetCalc(); }
     } else {
-      // Not approved — show friendly message, hide tool
       document.getElementById('access-denied').style.display = 'flex';
       document.getElementById('tool-content').style.display = 'none';
     }
   } catch(e) {
     console.warn('Could not load contractors list:', e);
-    // On error, still show denied to be safe
     document.getElementById('access-denied').style.display = 'flex';
     document.getElementById('tool-content').style.display = 'none';
   }
 }
-// ============ END CONTRACTOR ACCESS ============
 
-// OLD contractor block replaced
-const _CONTRACTORS_URL_OLD = 'https://raw.githubusercontent.com/tom-smsupply/summit-tools/main/contractors.json';
-let isApprovedContractor = false;
-
-async function checkContractorAccess(email) { // returns promise
+// Check auth on page load
+if (checkAuth()) {
+  document.getElementById('auth-modal').classList.add('hidden');
+  document.body.style.display = 'block';
+  document.body.style.padding = '0';
   try {
-    const res = await fetch(CONTRACTORS_URL + '?nocache=' + Date.now());
-    const data = await res.json();
-    const approved = (data.approved || []).map(e => e.toLowerCase());
-    isApprovedContractor = approved.includes(email.toLowerCase());
-  } catch(e) {
-    console.warn('Could not load contractors list:', e);
-    isApprovedContractor = false;
-  }
-  const btn = document.getElementById('transfer-btn');
-  if (btn) btn.style.display = isApprovedContractor ? '' : 'none';
+    const savedAuth = JSON.parse(localStorage.getItem('smsCalcAuth') || '{}');
+    if (savedAuth.email) checkContractorAccess(savedAuth.email);
+  } catch(e) { checkContractorAccess(''); }
 }
-// ============ END CONTRACTOR ACCESS ============
-
-function initializeCalculator() {
-  if (window.__SAVED_PROJECT__) {
-    document.getElementById('sections-container').innerHTML = '';
-    projectName = window.__SAVED_PROJECT__.projectName;
-    document.getElementById('project-name').value = projectName;
-    sections = window.__SAVED_PROJECT__.sections;
-    pairings = window.__SAVED_PROJECT__.pairings || [];
-    if (sections.length > 0) lastProfile = sections[0].profile || 'tuff';
-    sections.forEach(s => {
-      renderSection(s);
-      if (s.heightMode === 'calculated') {
-        switchHeightMode(s.id, 'calculated');
-      }
-    });
-    renderPairings();
-  } else {
-    addSection();
-  }
-  lucide.createIcons();
-}
-
-// ============ END AUTHENTICATION ============
-
-
-// ============ CONTRACTOR ACCESS ============
-const CONTRACTORS_URL = 'https://raw.githubusercontent.com/tom-smsupply/summit-tools/main/contractors.json';
-
-async function checkContractorAccess(email) { // returns promise
-  try {
-    const res = await fetch(CONTRACTORS_URL + '?nocache=' + Date.now());
-    const data = await res.json();
-    const approved = (data.approved || []).map(e => e.toLowerCase());
-    if (approved.includes(email.toLowerCase())) {
-      // Approved — show the tool
-      document.getElementById('access-denied').style.display = 'none';
-      document.getElementById('tool-content').style.display = '';
-    } else {
-      // Not approved — show friendly message, hide tool
-      document.getElementById('access-denied').style.display = 'flex';
-      document.getElementById('tool-content').style.display = 'none';
-    }
-  } catch(e) {
-    console.warn('Could not load contractors list:', e);
-    // On error, still show denied to be safe
-    document.getElementById('access-denied').style.display = 'flex';
-    document.getElementById('tool-content').style.display = 'none';
-  }
-}
-// ============ END CONTRACTOR ACCESS ============
-
-// OLD contractor block replaced
-const _CONTRACTORS_URL_OLD = 'https://raw.githubusercontent.com/tom-smsupply/summit-tools/main/contractors.json';
-let isApprovedContractor = false;
-
-async function checkContractorAccess(email) { // returns promise
-  try {
-    const res = await fetch(CONTRACTORS_URL + '?nocache=' + Date.now());
-    const data = await res.json();
-    const approved = (data.approved || []).map(e => e.toLowerCase());
-    isApprovedContractor = approved.includes(email.toLowerCase());
-  } catch(e) {
-    console.warn('Could not load contractors list:', e);
-    isApprovedContractor = false;
-  }
-  const btn = document.getElementById('transfer-btn');
-  if (btn) btn.style.display = isApprovedContractor ? '' : 'none';
-}
-// ============ END CONTRACTOR ACCESS ============
-
-  // Initialize calculator — called after contractor access confirmed
-  // initializeCalculator defined above
-
-  // Called after login to check contractor access
-  function checkAndInitialize(email) {
-    checkContractorAccess(email).then(() => {
-      // If approved, tool-content is visible, initialize the calc
-      if (document.getElementById('tool-content').style.display !== 'none') {
-        initializeCalculator();
-      }
-    });
-  }
-
-  // Check auth on load
-  if (checkAuth()) {
-    document.getElementById('auth-modal').classList.add('hidden');
-    document.body.style.display = 'block';
-    document.body.style.padding = '0';
-    try {
-      const savedAuth = JSON.parse(localStorage.getItem('smsCalcAuth') || '{}');
-      const savedEmail = savedAuth.email || '';
-      checkContractorAccess(savedEmail).then(() => {
-        if (document.getElementById('tool-content').style.display !== 'none') {
-          document.getElementById('main-content').classList.remove('hidden');
-          document.getElementById('main-content').style.display = 'flex';
-          initializeCalculator();
-        }
-      });
-    } catch(e) {
-      checkContractorAccess('').then(() => {});
-    }
-  }
+// ============ END AUTH + CONTRACTOR ACCESS ============
 </script>
 
 <script>
