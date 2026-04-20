@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Summit Metal Supply — Tools</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-900: #1e3a8a;
+      --blue-800: #1e40af;
+      --blue-700: #1d4ed8;
+      --blue-600: #2563eb;
+      --blue-500: #3b82f6;
+      --blue-100: #dbeafe;
+      --blue-50:  #eff6ff;
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-500: #64748b;
+      --slate-300: #cbd5e1;
+      --slate-100: #f1f5f9;
+      --white: #ffffff;
+      --emerald: #059669;
+      --amber: #d97706;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--slate-900);
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(90deg, rgba(59,130,246,0.06) 0px, rgba(59,130,246,0.06) 1px, transparent 1px, transparent 80px),
+        repeating-linear-gradient(0deg,  rgba(59,130,246,0.06) 0px, rgba(59,130,246,0.06) 1px, transparent 1px, transparent 80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Blue glow top */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(37,99,235,0.25) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 56px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .logo-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .logo-img {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      border: 2px solid rgba(59,130,246,0.4);
+      box-shadow: 0 0 24px rgba(37,99,235,0.3);
+    }
+
+    .brand {
+      text-align: left;
+    }
+
+    .brand-name {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--blue-500);
+    }
+
+    .brand-tagline {
+      font-size: 12px;
+      color: var(--slate-500);
+      letter-spacing: 1px;
+      margin-top: 2px;
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+
+    h1 span { color: var(--blue-500); }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--slate-500);
+      font-weight: 400;
+    }
+
+    /* Divider */
+    .divider {
+      width: 48px;
+      height: 3px;
+      background: var(--blue-600);
+      border-radius: 2px;
+      margin: 20px auto;
+    }
+
+    /* Tool grid */
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 16px;
+    }
+
+    @media (max-width: 600px) {
+      .tools-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Tool card */
+    .tool-card {
+      display: block;
+      text-decoration: none;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 28px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .tool-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(37,99,235,0.08), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .tool-card:hover {
+      border-color: rgba(59,130,246,0.5);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(37,99,235,0.2);
+    }
+
+    .tool-card:hover::before { opacity: 1; }
+
+    .tool-card:nth-child(1) { animation-delay: 0.1s; }
+    .tool-card:nth-child(2) { animation-delay: 0.15s; }
+    .tool-card:nth-child(3) { animation-delay: 0.2s; }
+    .tool-card:nth-child(4) { animation-delay: 0.25s; }
+    .tool-card:nth-child(5) { animation-delay: 0.3s; }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .card-icon {
+      font-size: 28px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .card-badge {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+
+    .badge-restricted {
+      background: rgba(30,64,175,0.3);
+      color: var(--blue-500);
+      border: 1px solid rgba(59,130,246,0.3);
+    }
+
+    .badge-open {
+      background: rgba(5,150,105,0.2);
+      color: #34d399;
+      border: 1px solid rgba(52,211,153,0.3);
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.3px;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--slate-500);
+      line-height: 1.6;
+    }
+
+    .card-arrow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--blue-500);
+      opacity: 0;
+      transform: translateX(-6px);
+      transition: all 0.2s ease;
+    }
+
+    .tool-card:hover .card-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 64px;
+      font-size: 12px;
+      color: var(--slate-700);
+      animation: fadeUp 0.5s ease 0.4s both;
+    }
+
+    footer a {
+      color: var(--slate-500);
+      text-decoration: none;
+    }
+
+    footer a:hover { color: var(--blue-500); }
+
+    /* Animations */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <header>
+      <div class="logo-wrap">
+        <img src="logo.png" alt="Summit Metal Supply" class="logo-img">
+        <div class="brand">
+          <div class="brand-name">Summit Metal Supply</div>
+          <div class="brand-tagline">smsupply.ca</div>
+        </div>
+      </div>
+      <h1>Professional <span>Roofing Tools</span></h1>
+      <div class="divider"></div>
+      <p class="subtitle">Calculators and estimators for contractors and homeowners</p>
+    </header>
+
+    <div class="tools-grid">
+
+      <a href="roof-calculator.html" class="tool-card">
+        <div class="card-top">
+          <div class="card-icon">🏠</div>
+          <span class="card-badge badge-restricted">🔒 Login Required</span>
+        </div>
+        <div class="card-title">Roof Calculator</div>
+        <div class="card-desc">Calculate panel counts, linear footage, trim quantities and waste factor for any roof profile — Tuff Rib, Mechanical Standing Seam, Diamond Rib, and HF Shingle.</div>
+        <div class="card-arrow">Open tool →</div>
+      </a>
+
+      <a href="optimized-calculator.html" class="tool-card">
+        <div class="card-top">
+          <div class="card-icon">♻️</div>
+          <span class="card-badge badge-restricted">🔒 Login Required</span>
+        </div>
+        <div class="card-title">Waste Optimizer</div>
+        <div class="card-desc">Reduce material waste by pairing panel offcuts from opposing roof sections. Minimize off-cuts and maximize the value of every panel length ordered.</div>
+        <div class="card-arrow">Open tool →</div>
+      </a>
+
+      <a href="contractor-pricing.html" class="tool-card">
+        <div class="card-top">
+          <div class="card-icon">💰</div>
+          <span class="card-badge badge-restricted">🔒 Contractors Only</span>
+        </div>
+        <div class="card-title">Contractor Pricing Calculator</div>
+        <div class="card-desc">Search all Summit products and build a contractor-priced quote instantly. Accepts transferred quantities directly from the Roof Calculator.</div>
+        <div class="card-arrow">Open tool →</div>
+      </a>
+
+      <a href="trim_angle_calculator.html" class="tool-card">
+        <div class="card-top">
+          <div class="card-icon">📐</div>
+          <span class="card-badge badge-open">✓ Open Access</span>
+        </div>
+        <div class="card-title">Trim Angle Calculator</div>
+        <div class="card-desc">Calculate precise trim angles for metal roofing installations. Enter your pitch and get the exact angles needed for a perfect fit.</div>
+        <div class="card-arrow">Open tool →</div>
+      </a>
+
+      <a href="Roofing materials and labour price calculator.html" class="tool-card">
+        <div class="card-top">
+          <div class="card-icon">🧾</div>
+          <span class="card-badge badge-open">✓ Open Access</span>
+        </div>
+        <div class="card-title">Materials & Labour Price Calculator</div>
+        <div class="card-desc">Estimate total project costs including roofing materials and labour. Get a comprehensive price breakdown for budgeting and planning.</div>
+        <div class="card-arrow">Open tool →</div>
+      </a>
+
+    </div>
+
+    <footer>
+      <p>© 2025 Summit Metal Supply · <a href="https://smsupply.ca" target="_blank">smsupply.ca</a> · Innisfil, Ontario</p>
+    </footer>
+
+  </div>
+</body>
+</html>
