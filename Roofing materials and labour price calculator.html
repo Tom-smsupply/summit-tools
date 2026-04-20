@@ -970,5 +970,13 @@ async function checkContractorAccess(email) { // returns promise
 Make sure you have saved it first.')){ window.resetCalc(); }
   };
 </script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW reg failed:', err));
+    });
+  }
+</script>
 </body>
 </html>
