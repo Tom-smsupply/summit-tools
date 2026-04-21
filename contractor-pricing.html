@@ -977,6 +977,7 @@ async function checkContractorAccess(email) {
   function showTool() {
     document.getElementById('access-denied').style.display = 'none';
     document.getElementById('tool-content').style.display = '';
+    setTimeout(loadTransferredItems, 200);
   }
   function showDenied() {
     document.getElementById('access-denied').style.display = 'flex';
@@ -1091,6 +1092,61 @@ function doSearch() {
     resultsCount.textContent = '';
     resultsNote.textContent = '';
     showPrompt();
+
+// ============ TRANSFER RECEIVER ============
+function loadTransferredItems() {
+  let items = null;
+  let projName = '';
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const param = params.get('transfer');
+    if (param) items = JSON.parse(decodeURIComponent(param));
+  } catch(e) {}
+
+  if (!items) {
+    try {
+      const stored = sessionStorage.getItem('sms_transfer');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        items = parsed.items;
+        projName = parsed.project || '';
+        sessionStorage.removeItem('sms_transfer');
+      }
+    } catch(e) {}
+  }
+
+  if (!items || items.length === 0) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'transfer-banner';
+  banner.style.cssText = 'background:linear-gradient(135deg,#1a4a2e,#2e7d52);border-bottom:2px solid #d4a017;padding:14px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:22px;">📦</span>
+      <div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#d4a017;">Transfer Received</div>
+        <div style="font-size:13px;color:#a8d5b8;margin-top:1px;">${items.length} item${items.length!==1?'s':''} transferred from Roof Calculator${projName?' — '+projName:''}</div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('transfer-banner').remove()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:rgba(255,255,255,0.7);padding:6px 14px;cursor:pointer;font-size:13px;">Dismiss</button>
+  `;
+  document.querySelector('header').after(banner);
+
+  items.forEach(item => {
+    const existing = quote.findIndex(q => q.name === item.name);
+    if (existing !== -1) {
+      quote[existing].qty += item.qty;
+    } else {
+      quote.push({ id: Math.random(), name: item.name, price: item.price, qty: item.qty });
+    }
+  });
+  renderQuote();
+  setTimeout(() => {
+    document.querySelector('.right-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+}
+// ============ END TRANSFER RECEIVER ============
+
     return;
   }
 
@@ -1129,6 +1185,61 @@ function showPrompt() {
 
 showPrompt();
 
+// ============ TRANSFER RECEIVER ============
+function loadTransferredItems() {
+  let items = null;
+  let projName = '';
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const param = params.get('transfer');
+    if (param) items = JSON.parse(decodeURIComponent(param));
+  } catch(e) {}
+
+  if (!items) {
+    try {
+      const stored = sessionStorage.getItem('sms_transfer');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        items = parsed.items;
+        projName = parsed.project || '';
+        sessionStorage.removeItem('sms_transfer');
+      }
+    } catch(e) {}
+  }
+
+  if (!items || items.length === 0) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'transfer-banner';
+  banner.style.cssText = 'background:linear-gradient(135deg,#1a4a2e,#2e7d52);border-bottom:2px solid #d4a017;padding:14px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:22px;">📦</span>
+      <div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#d4a017;">Transfer Received</div>
+        <div style="font-size:13px;color:#a8d5b8;margin-top:1px;">${items.length} item${items.length!==1?'s':''} transferred from Roof Calculator${projName?' — '+projName:''}</div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('transfer-banner').remove()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:rgba(255,255,255,0.7);padding:6px 14px;cursor:pointer;font-size:13px;">Dismiss</button>
+  `;
+  document.querySelector('header').after(banner);
+
+  items.forEach(item => {
+    const existing = quote.findIndex(q => q.name === item.name);
+    if (existing !== -1) {
+      quote[existing].qty += item.qty;
+    } else {
+      quote.push({ id: Math.random(), name: item.name, price: item.price, qty: item.qty });
+    }
+  });
+  renderQuote();
+  setTimeout(() => {
+    document.querySelector('.right-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+}
+// ============ END TRANSFER RECEIVER ============
+
+
 function addItem(productIdx) {
   const existingIdx = quote.findIndex(q => q.id === productIdx);
   if (existingIdx !== -1) {
@@ -1146,6 +1257,61 @@ function addItem(productIdx) {
   resultsCount.textContent = '';
   resultsNote.textContent = '';
   showPrompt();
+
+// ============ TRANSFER RECEIVER ============
+function loadTransferredItems() {
+  let items = null;
+  let projName = '';
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const param = params.get('transfer');
+    if (param) items = JSON.parse(decodeURIComponent(param));
+  } catch(e) {}
+
+  if (!items) {
+    try {
+      const stored = sessionStorage.getItem('sms_transfer');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        items = parsed.items;
+        projName = parsed.project || '';
+        sessionStorage.removeItem('sms_transfer');
+      }
+    } catch(e) {}
+  }
+
+  if (!items || items.length === 0) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'transfer-banner';
+  banner.style.cssText = 'background:linear-gradient(135deg,#1a4a2e,#2e7d52);border-bottom:2px solid #d4a017;padding:14px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;';
+  banner.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;">
+      <span style="font-size:22px;">📦</span>
+      <div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#d4a017;">Transfer Received</div>
+        <div style="font-size:13px;color:#a8d5b8;margin-top:1px;">${items.length} item${items.length!==1?'s':''} transferred from Roof Calculator${projName?' — '+projName:''}</div>
+      </div>
+    </div>
+    <button onclick="document.getElementById('transfer-banner').remove()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:rgba(255,255,255,0.7);padding:6px 14px;cursor:pointer;font-size:13px;">Dismiss</button>
+  `;
+  document.querySelector('header').after(banner);
+
+  items.forEach(item => {
+    const existing = quote.findIndex(q => q.name === item.name);
+    if (existing !== -1) {
+      quote[existing].qty += item.qty;
+    } else {
+      quote.push({ id: Math.random(), name: item.name, price: item.price, qty: item.qty });
+    }
+  });
+  renderQuote();
+  setTimeout(() => {
+    document.querySelector('.right-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+}
+// ============ END TRANSFER RECEIVER ============
+
   // On mobile, scroll down to the quote panel
   const rightPanel = document.querySelector('.right-panel');
   if (rightPanel && window.innerWidth <= 700) {
