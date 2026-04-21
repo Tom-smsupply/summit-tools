@@ -894,8 +894,14 @@ function calculate(s) {
         if (s.config === 'both') {
           // 'both' config has no gables
         } else {
+          // Square side (always present for right/left)
           const sqW = (s.config === 'right' && s.leftAgainstWall) || (s.config === 'left' && s.rightAgainstWall);
           if (sqW) tSideWall += h; else tGable += h;
+          // When r === e (both sides are square/vertical), the other side also needs gable trim
+          if (Math.abs(r - e) <= 0.1) {
+            const sqW2 = (s.config === 'right' && s.rightAgainstWall) || (s.config === 'left' && s.leftAgainstWall);
+            if (sqW2) tSideWall += h; else tGable += h;
+          }
         }
       }
       
