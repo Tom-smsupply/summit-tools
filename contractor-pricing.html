@@ -874,7 +874,8 @@
       <div class="total-items" id="totalItems">0 line items</div>
 
       <div class="action-btns">
-        <button class="btn btn-gold" onclick="triggerAction('save')">🖨 Print / Save PDF</button>
+        <button class="btn btn-gold" onclick="triggerAction('print')">🖨 Print / Save PDF</button>
+        <button class="btn btn-outline" onclick="triggerAction('save')" style="border-color:var(--accent);color:var(--accent);">💾 Save Project</button>
       </div>
       <button class="btn btn-clear" onclick="clearQuote()">✕ Clear Quote</button>
     </div>
@@ -885,12 +886,12 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h2>Project Details</h2>
-    <p>Enter a project name to label this quote. To save as PDF, choose <strong>"Save as PDF"</strong> as the destination in the print dialog.</p>
+    <p>Enter a project name for this quote. <strong>Save Project</strong> saves an editable HTML file. <strong>Print / Save PDF</strong> saves the HTML and opens the print dialog.</p>
     <label for="projectName">Project Name</label>
     <input type="text" id="projectName" placeholder="e.g. Smith Residence - Roof 2025" maxlength="80" />
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-gold" id="confirmBtn" onclick="confirmAction()">🖨 Print / Save PDF</button>
+      <button class="btn btn-gold" id="confirmBtn" onclick="confirmAction()">Continue</button>
     </div>
   </div>
 </div>
@@ -1130,6 +1131,29 @@ function updateTotals(subtotal) {
 
 showPrompt();
 
+// Restore saved quote if reopening a saved file
+if (window.__SAVED_QUOTE__) {
+  const s = window.__SAVED_QUOTE__;
+  quote = s.quote || [];
+  renderQuote();
+  const si = document.getElementById('shippingInput');
+  if (si && s.shipping) { si.value = s.shipping; updateTotals(); }
+  // Show a banner
+  setTimeout(() => {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:linear-gradient(135deg,#1a3a5e,#1e40af);border-bottom:2px solid #d4a017;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;';
+    banner.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">📂</span>
+        <span style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;color:#d4a017;">Saved project loaded — ${s.projName || 'Contractor Quote'}</span>
+      </div>
+      <button onclick="this.parentElement.remove()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:rgba(255,255,255,0.7);padding:4px 12px;cursor:pointer;font-size:12px;">✕</button>
+    `;
+    document.querySelector('header').after(banner);
+  }, 500);
+}
+
+
 // ============ TRANSFER RECEIVER ============
 function loadTransferredItems() {
   let items = null;
@@ -1239,6 +1263,29 @@ function updateTotals(subtotal) {
 
 showPrompt();
 
+// Restore saved quote if reopening a saved file
+if (window.__SAVED_QUOTE__) {
+  const s = window.__SAVED_QUOTE__;
+  quote = s.quote || [];
+  renderQuote();
+  const si = document.getElementById('shippingInput');
+  if (si && s.shipping) { si.value = s.shipping; updateTotals(); }
+  // Show a banner
+  setTimeout(() => {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:linear-gradient(135deg,#1a3a5e,#1e40af);border-bottom:2px solid #d4a017;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;';
+    banner.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">📂</span>
+        <span style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;color:#d4a017;">Saved project loaded — ${s.projName || 'Contractor Quote'}</span>
+      </div>
+      <button onclick="this.parentElement.remove()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:rgba(255,255,255,0.7);padding:4px 12px;cursor:pointer;font-size:12px;">✕</button>
+    `;
+    document.querySelector('header').after(banner);
+  }, 500);
+}
+
+
 // ============ TRANSFER RECEIVER ============
 function loadTransferredItems() {
   let items = null;
@@ -1328,6 +1375,29 @@ function updateTotals(subtotal) {
 }
 
 showPrompt();
+
+// Restore saved quote if reopening a saved file
+if (window.__SAVED_QUOTE__) {
+  const s = window.__SAVED_QUOTE__;
+  quote = s.quote || [];
+  renderQuote();
+  const si = document.getElementById('shippingInput');
+  if (si && s.shipping) { si.value = s.shipping; updateTotals(); }
+  // Show a banner
+  setTimeout(() => {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:linear-gradient(135deg,#1a3a5e,#1e40af);border-bottom:2px solid #d4a017;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;gap:16px;';
+    banner.innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">📂</span>
+        <span style="font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;color:#d4a017;">Saved project loaded — ${s.projName || 'Contractor Quote'}</span>
+      </div>
+      <button onclick="this.parentElement.remove()" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;color:rgba(255,255,255,0.7);padding:4px 12px;cursor:pointer;font-size:12px;">✕</button>
+    `;
+    document.querySelector('header').after(banner);
+  }, 500);
+}
+
 
 // ============ TRANSFER RECEIVER ============
 function loadTransferredItems() {
@@ -1478,12 +1548,37 @@ function clearQuote() {
   }
 }
 
+
+function saveQuoteAsHTML(projName) {
+  // Embed current quote state into a copy of the page
+  const shipping = parseFloat(document.getElementById('shippingInput')?.value) || 0;
+  const savedState = {
+    quote: quote,
+    shipping: shipping,
+    projName: projName
+  };
+  const stateScript = `<script id="__saved_quote__">window.__SAVED_QUOTE__ = ${JSON.stringify(savedState)};<\/script>`;
+  const docHtml = document.documentElement.outerHTML.replace('</head>', stateScript + '</head>');
+  const blob = new Blob([docHtml], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = projName.replace(/[^a-z0-9 ]/gi, '_') + '.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 function triggerAction(action) {
   if (quote.length === 0) {
     alert('Please add some items to your quote first.');
     return;
   }
   pendingAction = action;
+  const confirmBtn = document.getElementById('confirmBtn');
+  if (action === 'print') {
+    confirmBtn.textContent = '🖨 Print / Save PDF';
+  } else {
+    confirmBtn.textContent = '💾 Save Project';
+  }
   document.getElementById('modalOverlay').classList.add('active');
   document.getElementById('projectName').focus();
 }
@@ -1505,17 +1600,28 @@ document.getElementById('projectName').addEventListener('keydown', e => {
 function confirmAction() {
   const projName = document.getElementById('projectName').value.trim() || 'Contractor Quote';
   closeModal();
+
+  if (pendingAction === 'save') {
+    // Save HTML only
+    saveQuoteAsHTML(projName);
+    return;
+  }
+
+  // Print / Save PDF — also save HTML first
+  saveQuoteAsHTML(projName);
   document.getElementById('printProjectName').textContent = projName;
   document.getElementById('printDate').textContent = new Date().toLocaleDateString('en-CA', {year:'numeric',month:'long',day:'numeric'});
   document.getElementById('printHeader').style.display = 'block';
-  // Set page title so browser uses project name as the default PDF filename
   const originalTitle = document.title;
   document.title = 'Summit Metal Supply - ' + projName;
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
   setTimeout(() => {
     window.print();
-    document.title = originalTitle;
-    document.getElementById('printHeader').style.display = 'none';
-  }, 100);
+    setTimeout(() => {
+      document.title = originalTitle;
+      document.getElementById('printHeader').style.display = 'none';
+    }, 1000);
+  }, isMobile ? 400 : 150);
 }
 </script>
 </div><!-- end tool-content -->
