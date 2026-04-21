@@ -691,7 +691,7 @@
   /* PRINT STYLES */
   @media print {
     body { background: #fff !important; color: #000 !important; }
-    header, .left-panel, .modal-overlay, .action-btns, .btn-clear, .qi-remove, .qty-btn, .qty-input, .section-label { display: none !important; }
+    header, .left-panel, .modal-overlay, .action-btns, .btn-clear, .qi-remove, .qty-btn, .qty-input, .section-label, #shippingInput { display: none !important; }
     .main-layout { display: block !important; }
     .right-panel {
       max-height: none !important;
@@ -704,6 +704,7 @@
     .qi-name { color: #000 !important; font-size: 13px !important; }
     .qi-subtotal { color: #000 !important; font-weight: 700 !important; }
     .qty-label { color: #555 !important; }
+    .shipping-print-val { display: inline !important; color: #000 !important; }
     .print-qty-val { display: inline !important; color: #000 !important; font-weight: 600 !important; }
     .total-amount { color: #000 !important; font-size: 24px !important; }
     .total-label { color: #555 !important; }
@@ -714,6 +715,7 @@
 
   .print-header { display: none; }
   .print-qty-val { display: none; }
+  .shipping-print-val { display: none; }
 
   /* Highlight match */
   mark {
@@ -831,7 +833,7 @@
           <div style="font-size:11px; text-transform:uppercase; letter-spacing:2px; color:#888; margin-bottom:2px;">Project</div>
           <div style="font-size:16px; font-weight:600; color:#1a2332;" id="printProjectName"></div>
         </div>
-        <div style="font-size:18px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#d4a017;">ESTIMATED CONTRACTOR COST</div>
+        <div style="font-size:18px; font-weight:700; letter-spacing:1px; text-transform:uppercase; color:#d4a017;">ESTIMATED CONTRACTOR COST (HST INCLUDED)</div>
       </div>
     </div>
 
@@ -847,6 +849,24 @@
     <div id="quoteList" style="display:none"></div>
 
     <div class="quote-footer">
+      <div class="total-row" style="margin-bottom:10px;">
+        <span class="total-label">Subtotal</span>
+        <span style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:600;color:var(--text);" id="subtotalAmount">$0.00</span>
+      </div>
+      <div class="total-row" style="margin-bottom:10px;align-items:center;">
+        <span class="total-label">Shipping</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="shipping-print-val" style="display:none;font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:600;color:#000;" id="shippingPrintVal">$0.00</span>
+          <span style="color:var(--text-muted);font-size:14px;">$</span>
+          <input type="number" id="shippingInput" min="0" step="0.01" value="0" placeholder="0.00"
+            style="width:90px;background:var(--steel-mid);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:14px;font-weight:600;padding:4px 8px;text-align:right;outline:none;"
+            oninput="updateTotals()" onfocus="if(this.value==='0')this.value='';" onblur="if(this.value==='')this.value='0';">
+        </div>
+      </div>
+      <div class="total-row" style="margin-bottom:10px;">
+        <span class="total-label">HST (13%)</span>
+        <span style="font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:600;color:var(--text);" id="hstAmount">$0.00</span>
+      </div>
       <div class="total-row">
         <span class="total-label" style="font-weight:700;">Total</span>
         <span class="total-amount" id="totalAmount">$0.00</span>
@@ -1091,7 +1111,24 @@ function doSearch() {
     resultsDiv.innerHTML = '';
     resultsCount.textContent = '';
     resultsNote.textContent = '';
-    showPrompt();
+    
+function updateTotals(subtotal) {
+  if (subtotal === undefined) {
+    subtotal = quote.reduce((s, item) => s + item.price * item.qty, 0);
+  }
+  const shipping = parseFloat(document.getElementById('shippingInput')?.value) || 0;
+  const hst = (subtotal + shipping) * 0.13;
+  const total = subtotal + shipping + hst;
+  const subtotalEl = document.getElementById('subtotalAmount');
+  const hstEl = document.getElementById('hstAmount');
+  if (subtotalEl) subtotalEl.textContent = '$' + subtotal.toFixed(2);
+  if (hstEl) hstEl.textContent = '$' + hst.toFixed(2);
+  totalAmountEl.textContent = '$' + total.toFixed(2);
+  const spv = document.getElementById('shippingPrintVal');
+  if (spv) spv.textContent = '$' + shipping.toFixed(2);
+}
+
+showPrompt();
 
 // ============ TRANSFER RECEIVER ============
 function loadTransferredItems() {
@@ -1183,6 +1220,23 @@ function showPrompt() {
   resultsDiv.innerHTML = `<div class="search-prompt"><span class="sp-icon">🏗</span><span>Start typing to search <strong>777 products</strong></span></div>`;
 }
 
+
+function updateTotals(subtotal) {
+  if (subtotal === undefined) {
+    subtotal = quote.reduce((s, item) => s + item.price * item.qty, 0);
+  }
+  const shipping = parseFloat(document.getElementById('shippingInput')?.value) || 0;
+  const hst = (subtotal + shipping) * 0.13;
+  const total = subtotal + shipping + hst;
+  const subtotalEl = document.getElementById('subtotalAmount');
+  const hstEl = document.getElementById('hstAmount');
+  if (subtotalEl) subtotalEl.textContent = '$' + subtotal.toFixed(2);
+  if (hstEl) hstEl.textContent = '$' + hst.toFixed(2);
+  totalAmountEl.textContent = '$' + total.toFixed(2);
+  const spv = document.getElementById('shippingPrintVal');
+  if (spv) spv.textContent = '$' + shipping.toFixed(2);
+}
+
 showPrompt();
 
 // ============ TRANSFER RECEIVER ============
@@ -1256,7 +1310,24 @@ function addItem(productIdx) {
   resultsDiv.innerHTML = '';
   resultsCount.textContent = '';
   resultsNote.textContent = '';
-  showPrompt();
+  
+function updateTotals(subtotal) {
+  if (subtotal === undefined) {
+    subtotal = quote.reduce((s, item) => s + item.price * item.qty, 0);
+  }
+  const shipping = parseFloat(document.getElementById('shippingInput')?.value) || 0;
+  const hst = (subtotal + shipping) * 0.13;
+  const total = subtotal + shipping + hst;
+  const subtotalEl = document.getElementById('subtotalAmount');
+  const hstEl = document.getElementById('hstAmount');
+  if (subtotalEl) subtotalEl.textContent = '$' + subtotal.toFixed(2);
+  if (hstEl) hstEl.textContent = '$' + hst.toFixed(2);
+  totalAmountEl.textContent = '$' + total.toFixed(2);
+  const spv = document.getElementById('shippingPrintVal');
+  if (spv) spv.textContent = '$' + shipping.toFixed(2);
+}
+
+showPrompt();
 
 // ============ TRANSFER RECEIVER ============
 function loadTransferredItems() {
@@ -1364,9 +1435,9 @@ function renderQuote() {
     </div>`;
   }).join('');
 
-  const total = quote.reduce((s, item) => s + item.price * item.qty, 0);
+  const subtotal = quote.reduce((s, item) => s + item.price * item.qty, 0);
   const totalQty = quote.reduce((s, item) => s + item.qty, 0);
-  totalAmountEl.textContent = '$' + total.toFixed(2);
+  updateTotals(subtotal);
   totalItemsEl.textContent = `${quote.length} line item${quote.length !== 1 ? 's' : ''} · ${totalQty} unit${totalQty !== 1 ? 's' : ''} total`;
 }
 
@@ -1377,9 +1448,9 @@ function updateTotalsInPlace() {
     if (subtotals[i]) subtotals[i].textContent = '$' + (item.price * item.qty).toFixed(2);
     if (printQtys[i]) printQtys[i].textContent = '\u00a0' + item.qty;
   });
-  const total = quote.reduce((s, item) => s + item.price * item.qty, 0);
+  const subtotal = quote.reduce((s, item) => s + item.price * item.qty, 0);
   const totalQty = quote.reduce((s, item) => s + item.qty, 0);
-  totalAmountEl.textContent = '$' + total.toFixed(2);
+  updateTotals(subtotal);
   totalItemsEl.textContent = `${quote.length} line item${quote.length !== 1 ? 's' : ''} · ${totalQty} unit${totalQty !== 1 ? 's' : ''} total`;
 }
 
