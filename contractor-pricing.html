@@ -1138,6 +1138,9 @@ if (window.__SAVED_QUOTE__) {
   renderQuote();
   const si = document.getElementById('shippingInput');
   if (si && s.shipping) { si.value = s.shipping; updateTotals(); }
+  // Pre-fill project name so Print/Save PDF doesn't ask again
+  const pn = document.getElementById('projectName');
+  if (pn && s.projName) pn.value = s.projName;
   // Show a banner
   setTimeout(() => {
     const banner = document.createElement('div');
@@ -1270,6 +1273,9 @@ if (window.__SAVED_QUOTE__) {
   renderQuote();
   const si = document.getElementById('shippingInput');
   if (si && s.shipping) { si.value = s.shipping; updateTotals(); }
+  // Pre-fill project name so Print/Save PDF doesn't ask again
+  const pn = document.getElementById('projectName');
+  if (pn && s.projName) pn.value = s.projName;
   // Show a banner
   setTimeout(() => {
     const banner = document.createElement('div');
@@ -1383,6 +1389,9 @@ if (window.__SAVED_QUOTE__) {
   renderQuote();
   const si = document.getElementById('shippingInput');
   if (si && s.shipping) { si.value = s.shipping; updateTotals(); }
+  // Pre-fill project name so Print/Save PDF doesn't ask again
+  const pn = document.getElementById('projectName');
+  if (pn && s.projName) pn.value = s.projName;
   // Show a banner
   setTimeout(() => {
     const banner = document.createElement('div');
@@ -1573,6 +1582,12 @@ function triggerAction(action) {
     return;
   }
   pendingAction = action;
+  // If project name already filled (e.g. reopened saved file), skip modal
+  const existingName = document.getElementById('projectName').value.trim();
+  if (existingName) {
+    confirmAction();
+    return;
+  }
   const confirmBtn = document.getElementById('confirmBtn');
   if (action === 'print') {
     confirmBtn.textContent = '🖨 Print / Save PDF';
