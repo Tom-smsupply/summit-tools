@@ -243,6 +243,23 @@
       <div class="grid2" style="margin-top:14px">
         <div><label>Estimated days to complete</label><input type="number" id="days" value="1" min="1" max="60" step="1" oninput="calc()"></div>
       </div>
+      <div style="margin-top:14px;padding:14px;background:#edf1f3;border-left:3px solid var(--gun);border-radius:0 6px 6px 0;">
+        <label style="font-weight:600;color:var(--gun-dark);margin-bottom:6px;display:block;">Actual Materials Cost (optional — from Summit Metal Supply quote)</label>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;">
+            <label style="font-size:11px;">Total materials cost ($) — overrides per ft² estimate</label>
+            <div style="position:relative;margin-top:4px;">
+              <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--gray-mid);font-size:14px;font-weight:600;">$</span>
+              <input type="text" id="actualMatCost" placeholder="0.00"
+                style="padding-left:24px;text-align:right;font-size:15px;font-weight:600;color:var(--gun-deeper);letter-spacing:0.5px;"
+                oninput="formatCurrencyInput(this);calc()"
+                onblur="finalizeCurrencyInput(this);calc()"
+                onfocus="if(this.value==='$0.00'||this.value==='0.00')this.value='';">
+            </div>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--gray-light);margin-top:8px;">Leave blank to use the per ft² rate from Admin settings. When filled, your markup % still applies on top of this amount.</p>
+      </div>
     </div>
     <div class="section">
       <div class="section-title">Roof slope</div>
@@ -655,18 +672,21 @@ if (checkAuth()) {
     const storeyAdj=storeys===2?rv('r-s2'):storeys===3?rv('r-s3'):0;
     const tearoffRate=tearoff===1?rv('r-t1'):tearoff===2?rv('r-t2'):0;
     const kmRate=rv('r-km'),kmMin=rv('r-km-min');
-    const matBase=sqft*matCostRaw,matMarkupAmt=matBase*(markup/100);
+    const actualMatCostInput=parseCurrencyInput('actualMatCost');
+    const usingActualCost=actualMatCostInput>0;
+    const matBase=usingActualCost?actualMatCostInput:sqft*matCostRaw;
+    const matMarkupAmt=matBase*(markup/100);
     const labourCost=sqft*labourBase,slopeCost=sqft*slopeAdj,storeyCost=sqft*storeyAdj,tearoffCost=sqft*tearoffRate;
     const ventCost=vents*rv('r-vent'),valleyCost=valleyFt*rv('r-valley'),skylightCost=skylights*rv('r-sky'),chimneyCost=chimneys*rv('r-chimney');
     const travelRaw=km*kmRate*days,travelCost=km>0?Math.max(travelRaw,kmMin):0;
     const total=matBase+matMarkupAmt+labourCost+slopeCost+storeyCost+tearoffCost+ventCost+valleyCost+skylightCost+chimneyCost+travelCost;
-    return {sqft,storeys,profile,km,days,vents,valleyFt,skylights,chimneys,tearoff,matCostRaw,markup,labourBase,matBase,matMarkupAmt,labourCost,slopeCost,storeyCost,tearoffCost,ventCost,valleyCost,skylightCost,chimneyCost,travelRaw,travelCost,kmRate,kmMin,total,slopeAdj,storeyAdj,tearoffRate};
+    return {sqft,storeys,profile,km,days,vents,valleyFt,skylights,chimneys,tearoff,matCostRaw,markup,labourBase,matBase,matMarkupAmt,labourCost,slopeCost,storeyCost,tearoffCost,ventCost,valleyCost,skylightCost,chimneyCost,travelRaw,travelCost,kmRate,kmMin,total,slopeAdj,storeyAdj,tearoffRate,usingActualCost,actualMatCostInput};
   }
   window.calc=function(){
     const c=computeCosts();
     const rows=[
       {header:'Materials cost'},
-      ['Materials — '+PROFILE_LABELS[c.profile]+' ('+c.sqft.toLocaleString()+' ft² × $'+c.matCostRaw.toFixed(2)+')',fmt(c.matBase),'neutral'],
+      [c.usingActualCost?'Materials — Actual Summit Quote cost':('Materials — '+PROFILE_LABELS[c.profile]+' ('+c.sqft.toLocaleString()+' ft² × $'+c.matCostRaw.toFixed(2)+')'),fmt(c.matBase),'neutral'],
       c.markup>0?['Markup ('+c.markup+'%)','+'+fmt(c.matMarkupAmt),'add']:null,
       {header:'Labour'},
       ['Base labour — '+PROFILE_LABELS[c.profile]+' ('+c.sqft.toLocaleString()+' ft² × $'+c.labourBase.toFixed(2)+')',fmt(c.labourCost),'neutral'],
@@ -793,6 +813,7 @@ if (checkAuth()) {
     document.getElementById('vents').value='0';document.getElementById('valleys').value='0';
     document.getElementById('skylights').value='0';document.getElementById('chimneys').value='0';
     document.getElementById('tearoff').value='0';
+    const amc = document.getElementById('actualMatCost'); if(amc) { amc.value=''; }
     document.querySelectorAll('.slope-btn').forEach(b=>b.classList.remove('active'));
     document.querySelector('.slope-btn').classList.add('active');
     window.currentSlope='low';document.getElementById('slopeNote').classList.add('hidden');
