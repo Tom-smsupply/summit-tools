@@ -656,6 +656,29 @@ if (checkAuth()) {
     if(note){nb.textContent=note;nb.classList.remove('hidden');}else{nb.classList.add('hidden');}
     calc();
   };
+
+function formatCurrencyInput(el) {
+  let raw = el.value.replace(/[^0-9.]/g, '');
+  const parts = raw.split('.');
+  if (parts.length > 2) raw = parts[0] + '.' + parts.slice(1).join('');
+  el.value = raw;
+}
+
+function finalizeCurrencyInput(el) {
+  let raw = el.value.replace(/[^0-9.]/g, '');
+  if (!raw || parseFloat(raw) === 0) { el.value = ''; return; }
+  const num = parseFloat(raw);
+  if (!isNaN(num)) {
+    el.value = num.toLocaleString('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+}
+
+function parseCurrencyInput(id) {
+  const el = document.getElementById(id);
+  if (!el) return 0;
+  return parseFloat(el.value.replace(/[^0-9.]/g, '')) || 0;
+}
+
   function computeCosts(){
     const sqft=parseFloat(document.getElementById('sqft').value)||0;
     const storeys=parseInt(document.getElementById('storeys').value)||1;
