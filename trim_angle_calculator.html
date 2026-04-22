@@ -50,7 +50,6 @@ button:hover{background:#444}
         <input type="number" id="rise2" value="8" step="0.25" min="0.25">
       </div>
     </div>
-    <button onclick="calculate()">Calculate angles</button>
     <div class="note">Rise per 12" of run. Example: 4/12 pitch → enter 4.</div>
   </div>
   <div class="card">
@@ -243,7 +242,11 @@ document.getElementById("trimType").addEventListener("change",function(){
   const isTG=this.value==="transition_gambrel";
   document.getElementById("rise2Wrap").style.display=isTG?"block":"none";
   document.getElementById("p1label").textContent=isTG?"Pitch 1 – rise (per 12\")":"Pitch – rise (per 12\")";
+  calculate();
 });
+
+document.getElementById("rise1").addEventListener("input",calculate);
+document.getElementById("rise2").addEventListener("input",calculate);
 
 calculate();
 </script>
