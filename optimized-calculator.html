@@ -200,6 +200,27 @@
           <p class="text-emerald-200 italic">Add section pairings above to see optimized cuts</p>
         </div>
       </div>
+
+      <!-- Trims & Accessories (same as standard, for transfer to pricing) -->
+      <div class="mt-6 pt-6 border-t border-white/20">
+        <h3 class="font-bold mb-3 text-sm uppercase tracking-widest text-emerald-100">Trims &amp; Accessories</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div class="bg-white/10 p-3 rounded-lg"><p class="text-xs text-emerald-200">Ridge Caps</p><p id="opt-ridge-caps" class="text-xl font-bold">0</p></div>
+          <div class="bg-white/10 p-3 rounded-lg"><p class="text-xs text-emerald-200">Eave Trims</p><p id="opt-eave-trims" class="text-xl font-bold">0</p></div>
+          <div class="bg-white/10 p-3 rounded-lg"><p class="text-xs text-emerald-200">Valley Flash</p><p id="opt-valley-flashing" class="text-xl font-bold">0</p></div>
+          <div class="bg-white/10 p-3 rounded-lg"><p class="text-xs text-emerald-200">Hip Caps</p><p id="opt-hip-caps" class="text-xl font-bold">0</p></div>
+          <div class="bg-white/10 p-3 rounded-lg"><p class="text-xs text-emerald-200">Gable Trim</p><p id="opt-gable-trim" class="text-xl font-bold">0</p></div>
+          <div class="bg-white/10 p-3 rounded-lg"><p class="text-xs text-emerald-200">Screws</p><p id="opt-total-screws" class="text-xl font-bold">0</p></div>
+          <div id="opt-clips-tile" class="bg-indigo-700/60 p-3 rounded-lg" style="display:none"><p class="text-xs">Clips</p><p id="opt-clip-fasteners" class="text-xl font-bold">0</p></div>
+          <div id="opt-end-wall-tile" class="bg-amber-700/60 p-3 rounded-lg" style="display:none"><p class="text-xs">End Wall</p><p id="opt-end-wall-flashing" class="text-xl font-bold">0</p></div>
+          <div id="opt-side-wall-tile" class="bg-amber-700/60 p-3 rounded-lg" style="display:none"><p class="text-xs">Side Wall</p><p id="opt-side-wall-flashing" class="text-xl font-bold">0</p></div>
+        </div>
+      </div>
+
+      <!-- Transfer to Pricing button -->
+      <div class="mt-6 flex justify-end no-print">
+        <button id="opt-transfer-btn" onclick="openTransferModal()" class="bg-amber-500 text-white px-4 py-2 rounded-xl text-sm font-semibold" style="display:none;">📦 Send to Pricing →</button>
+      </div>
     </div>
 
   </div>
@@ -1245,11 +1266,24 @@ function updateOptimizedSummary() {
   const optTotalPanels = combinedPanels.length + unpairedPanels.length;
   const optTotalLinearIn = combinedPanels.reduce((sum, p) => sum + p.length, 0) + unpairedPanels.reduce((sum, p) => sum + p.length, 0);
   const optTotalLinearFt = optTotalLinearIn / 12;
-  const nonShingleSections = sections.filter(s => s.profile !== 'shingle');
-  const avgCoverage = nonShingleSections.length > 0 
-    ? nonShingleSections.reduce((sum, s) => sum + parseFloat(s.coverage || 36), 0) / nonShingleSections.length 
-    : 36;
-  const optTotalSqFt = (optTotalLinearIn / 12) * (avgCoverage / 12) + shingleSqFt;
+
+  // Calculate sq ft properly using each panel's section coverage
+  // Build a map of section name -> coverage
+  const sectionCoverageMap = {};
+  sections.forEach(s => { sectionCoverageMap[s.name] = parseFloat(s.coverage || 36); });
+  const defaultCoverage = 36;
+
+  let optSqIn = 0;
+  combinedPanels.forEach(p => {
+    // Combined panel uses the coverage of sectionA
+    const cov = sectionCoverageMap[p.sectionA] || defaultCoverage;
+    optSqIn += (p.length / 12) * (cov / 12) * 144; // back to sq inches then /144 = sq ft * 144
+  });
+  unpairedPanels.forEach(p => {
+    const cov = sectionCoverageMap[p.section] || defaultCoverage;
+    optSqIn += (p.length / 12) * (cov / 12) * 144;
+  });
+  const optTotalSqFt = Math.ceil(optSqIn / 144) + shingleSqFt;
 
   // Update display
   if (shingleBoxes > 0 && optTotalPanels === 0) {
@@ -1287,6 +1321,20 @@ function updateOptimizedSummary() {
   document.getElementById('opt-waste-reduction').innerText = wastePercent > 0 ? `${wastePercent.toFixed(1)}%` : '0%';
 
   renderOptimizedCutList(combinedPanels, unpairedPanels, shingleBoxes, totalShingles, shingleSqFt, shinglesSaved);
+
+  // Mirror trims from standard summary into optimized section
+  const trimIds = ['ridge-caps','eave-trims','valley-flashing','hip-caps','gable-trim','total-screws','clip-fasteners','end-wall-flashing','side-wall-flashing'];
+  const tileIds = ['clips-tile','end-wall-tile','side-wall-tile'];
+  trimIds.forEach(id => {
+    const src = document.getElementById(id);
+    const dst = document.getElementById('opt-' + id);
+    if (src && dst) dst.innerText = src.innerText;
+  });
+  tileIds.forEach(id => {
+    const src = document.getElementById(id);
+    const dst = document.getElementById('opt-' + id);
+    if (src && dst) dst.style.display = src.style.display;
+  });
 }
     
   function renderOptimizedCutList(combinedPanels, unpairedPanels, shingleBoxes, totalShingles, shingleSqFt, shinglesSaved) {
@@ -1841,8 +1889,215 @@ if (window.__SAVED_PROJECT__) {
   addSection();
 }
 lucide.createIcons();
+
+// ============ TRANSFER TO PRICING ============
+const PRICING_PRODUCTS = [{"name": "10-9 x 1 1/8\" Standing Seam Screw", "search": "10-9 x 1 1/8\" standing seam screw", "price": 0.11}, {"name": "1 5/8\" Mechanical Clip", "search": "1 5/8\" mechanical clip", "price": 0.34}, {"name": "24g Mech Stnd Seam Black Panel", "search": "24 gauge mechanical standing seam black panel", "price": 3.45}, {"name": "24g Mech Stnd Seam Charcoal Panel", "search": "24 gauge mechanical standing seam charcoal panel", "price": 3.45}, {"name": "24g Mech Stnd Seam Dark Brown Panel", "search": "24 gauge mechanical standing seam dark brown panel", "price": 3.45}, {"name": "24g Mech Stnd Seam Ebony Panel", "search": "24 gauge mechanical standing seam ebony panel", "price": 3.7}, {"name": "24g Mech Stnd Seam Graphite grey Panel", "search": "24 gauge mechanical standing seam graphite grey panel", "price": 3.7}, {"name": "24g Mech Stnd Seam Melchers Green Panel", "search": "24 gauge mechanical standing seam melchers green panel", "price": 3.45}, {"name": "24g Mech Stnd Seam Sepia Brown Panel", "search": "24 gauge mechanical standing seam sepia brown panel", "price": 3.7}, {"name": "26g Diamond Rib Black Panel", "search": "26 gauge diamond rib black panel", "price": 2.05}, {"name": "26g Diamond Rib Charcoal Panel", "search": "26 gauge diamond rib charcoal panel", "price": 2.05}, {"name": "26g Diamond Rib Dark Brown Panel", "search": "26 gauge diamond rib dark brown panel", "price": 2.05}, {"name": "26g Diamond Rib Ebony Panel", "search": "26 gauge diamond rib ebony panel", "price": 2.14}, {"name": "26g Diamond Rib Graphite grey Panel", "search": "26 gauge diamond rib graphite grey panel", "price": 2.14}, {"name": "26g Diamond Rib Sepia Brown Panel", "search": "26 gauge diamond rib sepia brown panel", "price": 2.14}, {"name": "26g Mech Stnd Seam Black Panel", "search": "26 gauge mechanical standing seam black panel", "price": 3.23}, {"name": "26g Mech Stnd Seam Charcoal Panel", "search": "26 gauge mechanical standing seam charcoal panel", "price": 3.23}, {"name": "26g Mech Stnd Seam Dark Brown Panel", "search": "26 gauge mechanical standing seam dark brown panel", "price": 3.23}, {"name": "26g Mech Stnd Seam Ebony Panel", "search": "26 gauge mechanical standing seam ebony panel", "price": 3.44}, {"name": "26g Mech Stnd Seam Graphite grey Panel", "search": "26 gauge mechanical standing seam graphite grey panel", "price": 3.44}, {"name": "26g Mech Stnd Seam Sepia Brown Panel", "search": "26 gauge mechanical standing seam sepia brown panel", "price": 3.44}, {"name": "26g Tuff Rib Black Panel", "search": "26 gauge tuff rib black panel", "price": 2.05}, {"name": "26g Tuff Rib Charcoal Panel", "search": "26 gauge tuff rib charcoal panel", "price": 2.05}, {"name": "26g Tuff Rib Dark Brown Panel", "search": "26 gauge tuff rib dark brown panel", "price": 2.05}, {"name": "26g Tuff Rib Ebony Panel", "search": "26 gauge tuff rib ebony panel", "price": 2.14}, {"name": "26g Tuff Rib Graphite grey Panel", "search": "26 gauge tuff rib graphite grey panel", "price": 2.14}, {"name": "26g Tuff Rib Sepia Brown Panel", "search": "26 gauge tuff rib sepia brown panel", "price": 2.14}, {"name": "29g Diamond Rib Black Panel", "search": "29 gauge diamond rib black panel", "price": 1.49}, {"name": "29g Diamond Rib Charcoal Panel", "search": "29 gauge diamond rib charcoal panel", "price": 1.49}, {"name": "29g Diamond Rib Dark Brown Panel", "search": "29 gauge diamond rib dark brown panel", "price": 1.49}, {"name": "29g Diamond Rib Ebony Panel", "search": "29 gauge diamond rib ebony panel", "price": 1.55}, {"name": "29g Diamond Rib Graphite grey Panel", "search": "29 gauge diamond rib graphite grey panel", "price": 1.55}, {"name": "29g Diamond Rib Sepia Brown Panel", "search": "29 gauge diamond rib sepia brown panel", "price": 1.55}, {"name": "29g Tuff Rib Black Panel", "search": "29 gauge tuff rib black panel", "price": 1.49}, {"name": "29g Tuff Rib Charcoal Panel", "search": "29 gauge tuff rib charcoal panel", "price": 1.49}, {"name": "29g Tuff Rib Dark Brown Panel", "search": "29 gauge tuff rib dark brown panel", "price": 1.49}, {"name": "29g Tuff Rib Ebony Panel", "search": "29 gauge tuff rib ebony panel", "price": 1.55}, {"name": "29g Tuff Rib Graphite grey Panel", "search": "29 gauge tuff rib graphite grey panel", "price": 1.55}, {"name": "29g Tuff Rib Sepia Brown Panel", "search": "29 gauge tuff rib sepia brown panel", "price": 1.55}, {"name": "Ridge Cap-Black", "search": "ridge cap-black", "price": 25.42}, {"name": "Ridge Cap-Charcoal", "search": "ridge cap-charcoal", "price": 25.42}, {"name": "Ridge Cap-Dark Brown", "search": "ridge cap-dark brown", "price": 25.42}, {"name": "Ridge Cap-Ebony Textured", "search": "ridge cap-ebony textured", "price": 27.87}, {"name": "Ridge Cap-Graphite Textured", "search": "ridge cap-graphite textured", "price": 27.87}, {"name": "Ridge Cap-Sepia Brown Textured", "search": "ridge cap-sepia brown textured", "price": 27.87}, {"name": "26 Ridge Cap-Black", "search": "26 ridge cap-black", "price": 32.29}, {"name": "26 Ridge Cap-Charcoal", "search": "26 ridge cap-charcoal", "price": 32.29}, {"name": "26 Ridge Cap-Dark Brown", "search": "26 ridge cap-dark brown", "price": 32.29}, {"name": "26 Ridge Cap-Ebony Textured", "search": "26 ridge cap-ebony textured", "price": 35.39}, {"name": "26 Ridge Cap-Graphite Textured", "search": "26 ridge cap-graphite textured", "price": 35.39}, {"name": "26 Ridge Cap-Sepia Brown Textured", "search": "26 ridge cap-sepia brown textured", "price": 35.39}, {"name": "Standing Seam Black Ridge Cap", "search": "standing seam black ridge cap", "price": 32.61}, {"name": "Standing Seam Charcoal Ridge Cap", "search": "standing seam charcoal ridge cap", "price": 32.61}, {"name": "Standing Seam Dark Brown Ridge Cap", "search": "standing seam dark brown ridge cap", "price": 32.61}, {"name": "Standing Seam Ebony Ridge Cap", "search": "standing seam ebony ridge cap", "price": 35.42}, {"name": "Standing Seam Graphite grey Ridge Cap", "search": "standing seam graphite grey ridge cap", "price": 35.42}, {"name": "Standing Seam Sepia Brown Ridge Cap", "search": "standing seam sepia brown ridge cap", "price": 35.42}, {"name": "Eave Drip 1\"-Black", "search": "eave drip 1\"-black", "price": 10.68}, {"name": "Eave Drip 1\"-Charcoal", "search": "eave drip 1\"-charcoal", "price": 10.68}, {"name": "Eave Drip 1\"-Dark Brown", "search": "eave drip 1\"-dark brown", "price": 10.68}, {"name": "Eave Drip 1\"-Ebony Textured", "search": "eave drip 1\"-ebony textured", "price": 11.54}, {"name": "Eave Drip 1\"-Graphite Textured", "search": "eave drip 1\"-graphite textured", "price": 11.54}, {"name": "Eave Drip 1\"-Sepia Brown Textured", "search": "eave drip 1\"-sepia brown textured", "price": 11.54}, {"name": "Eave Drip 2\"-Black", "search": "eave drip 2\"-black", "price": 11.45}, {"name": "Eave Drip 2\"-Charcoal", "search": "eave drip 2\"-charcoal", "price": 11.45}, {"name": "Eave Drip 2\"-Dark Brown", "search": "eave drip 2\"-dark brown", "price": 11.45}, {"name": "Eave Drip 2\"-Ebony Textured", "search": "eave drip 2\"-ebony textured", "price": 12.49}, {"name": "Eave Drip 2\"-Graphite Textured", "search": "eave drip 2\"-graphite textured", "price": 12.49}, {"name": "Eave Drip 2\"-Sepia Brown Textured", "search": "eave drip 2\"-sepia brown textured", "price": 12.49}, {"name": "Extended Eave 1\"-Black", "search": "extended eave 1\"-black", "price": 15.63}, {"name": "Extended Eave 1\"-Charcoal", "search": "extended eave 1\"-charcoal", "price": 15.63}, {"name": "Extended Eave 1\"-Dark Brown", "search": "extended eave 1\"-dark brown", "price": 15.63}, {"name": "Extended Eave 1\"-Ebony Textured", "search": "extended eave 1\"-ebony textured", "price": 16.85}, {"name": "Extended Eave 1\"-Graphite Textured", "search": "extended eave 1\"-graphite textured", "price": 16.85}, {"name": "Extended Eave 1\"-Sepia Brown Textured", "search": "extended eave 1\"-sepia brown textured", "price": 16.85}, {"name": "Extended Eave 2\"-Black", "search": "extended eave 2\"-black", "price": 17.38}, {"name": "Extended Eave 2\"-Charcoal", "search": "extended eave 2\"-charcoal", "price": 17.38}, {"name": "Extended Eave 2\"-Dark Brown", "search": "extended eave 2\"-dark brown", "price": 17.38}, {"name": "Extended Eave 2\"-Ebony Textured", "search": "extended eave 2\"-ebony textured", "price": 18.77}, {"name": "Extended Eave 2\"-Graphite Textured", "search": "extended eave 2\"-graphite textured", "price": 18.77}, {"name": "Extended Eave 2\"-Sepia Brown Textured", "search": "extended eave 2\"-sepia brown textured", "price": 18.77}, {"name": "Standing Seam Black Extended Eave 1\"", "search": "standing seam black extended eave 1\"", "price": 18.0}, {"name": "Standing Seam Charcoal Extended Eave 1\"", "search": "standing seam charcoal extended eave 1\"", "price": 18.0}, {"name": "Standing Seam Dark Brown Extended Eave 1\"", "search": "standing seam dark brown extended eave 1\"", "price": 18.0}, {"name": "Standing Seam Ebony Extended Eave 1\"", "search": "standing seam ebony extended eave 1\"", "price": 19.41}, {"name": "Standing Seam Graphite grey Extended Eave 1\"", "search": "standing seam graphite grey extended eave 1\"", "price": 19.41}, {"name": "Standing Seam Sepia Brown Extended Eave 1\"", "search": "standing seam sepia brown extended eave 1\"", "price": 19.41}, {"name": "V-Valley 24\"-Black", "search": "v-valley 24\"-black", "price": 41.36}, {"name": "V-Valley 24\"-Charcoal", "search": "v-valley 24\"-charcoal", "price": 41.36}, {"name": "V-Valley 24\"-Dark Brown", "search": "v-valley 24\"-dark brown", "price": 41.36}, {"name": "V-Valley 24\"-Ebony Textured", "search": "v-valley 24\"-ebony textured", "price": 45.18}, {"name": "V-Valley 24\"-Graphite Textured", "search": "v-valley 24\"-graphite textured", "price": 45.18}, {"name": "V-Valley 24\"-Sepia Brown Textured", "search": "v-valley 24\"-sepia brown textured", "price": 45.18}, {"name": "W-Valley 24\"-Black", "search": "w-valley 24\"-black", "price": 41.36}, {"name": "W-Valley 24\"-Charcoal", "search": "w-valley 24\"-charcoal", "price": 41.36}, {"name": "W-Valley 24\"-Dark Brown", "search": "w-valley 24\"-dark brown", "price": 41.36}, {"name": "W-Valley 24\"-Ebony Textured", "search": "w-valley 24\"-ebony textured", "price": 45.18}, {"name": "W-Valley 24\"-Graphite Textured", "search": "w-valley 24\"-graphite textured", "price": 45.18}, {"name": "W-Valley 24\"-Sepia Brown Textured", "search": "w-valley 24\"-sepia brown textured", "price": 45.18}, {"name": "Standing Seam Black V-Valley with Cleats", "search": "standing seam black v-valley with cleats", "price": 62.77}, {"name": "Standing Seam Charcoal V-Valley with Cleats", "search": "standing seam charcoal v-valley with cleats", "price": 62.77}, {"name": "Standing Seam Dark Brown V-Valley with Cleats", "search": "standing seam dark brown v-valley with cleats", "price": 62.77}, {"name": "Standing Seam Ebony V-Valley with Cleats", "search": "standing seam ebony v-valley with cleats", "price": 68.43}, {"name": "Standing Seam Graphite grey V-Valley with Cleats", "search": "standing seam graphite grey v-valley with cleats", "price": 68.43}, {"name": "Standing Seam Sepia Brown V-Valley with Cleats", "search": "standing seam sepia brown v-valley with cleats", "price": 68.43}, {"name": "Gable Cap-Black", "search": "gable cap-black", "price": 18.74}, {"name": "Gable Cap-Charcoal", "search": "gable cap-charcoal", "price": 18.74}, {"name": "Gable Cap-Dark Brown", "search": "gable cap-dark brown", "price": 18.74}, {"name": "Gable Cap-Ebony Textured", "search": "gable cap-ebony textured", "price": 20.21}, {"name": "Gable Cap-Graphite Textured", "search": "gable cap-graphite textured", "price": 20.21}, {"name": "Gable Cap-Sepia Brown Textured", "search": "gable cap-sepia brown textured", "price": 20.21}, {"name": "26 Gable Cap-Black", "search": "26 gable cap-black", "price": 23.8}, {"name": "26 Gable Cap-Charcoal", "search": "26 gable cap-charcoal", "price": 23.8}, {"name": "26 Gable Cap-Dark Brown", "search": "26 gable cap-dark brown", "price": 23.8}, {"name": "26 Gable Cap-Ebony Textured", "search": "26 gable cap-ebony textured", "price": 25.66}, {"name": "26 Gable Cap-Graphite Textured", "search": "26 gable cap-graphite textured", "price": 25.66}, {"name": "26 Gable Cap-Sepia Brown Textured", "search": "26 gable cap-sepia brown textured", "price": 25.66}, {"name": "Standing Seam Black Gable Cap 1\"", "search": "standing seam black gable cap 1\"", "price": 20.02}, {"name": "Standing Seam Charcoal Gable Cap 1\"", "search": "standing seam charcoal gable cap 1\"", "price": 20.02}, {"name": "Standing Seam Dark Brown Gable Cap 1\"", "search": "standing seam dark brown gable cap 1\"", "price": 20.02}, {"name": "Standing Seam Ebony Gable Cap 1\"", "search": "standing seam ebony gable cap 1\"", "price": 21.64}, {"name": "Standing Seam Graphite grey Gable Cap 1\"", "search": "standing seam graphite grey gable cap 1\"", "price": 21.64}, {"name": "Standing Seam Sepia Brown Gable Cap 1\"", "search": "standing seam sepia brown gable cap 1\"", "price": 21.64}, {"name": "Standing Seam Black Hip Cap 1\"", "search": "standing seam black hip cap 1\"", "price": 65.76}, {"name": "Standing Seam Charcoal Hip Cap 1\"", "search": "standing seam charcoal hip cap 1\"", "price": 65.76}, {"name": "Standing Seam Dark Brown Hip Cap 1\"", "search": "standing seam dark brown hip cap 1\"", "price": 65.76}, {"name": "Standing Seam Ebony Hip Cap 1\"", "search": "standing seam ebony hip cap 1\"", "price": 71.6}, {"name": "Standing Seam Graphite grey Hip Cap 1\"", "search": "standing seam graphite grey hip cap 1\"", "price": 71.6}, {"name": "Standing Seam Sepia Brown Hip Cap 1\"", "search": "standing seam sepia brown hip cap 1\"", "price": 71.6}, {"name": "End Wall-Black", "search": "end wall-black", "price": 19.89}, {"name": "End Wall-Charcoal", "search": "end wall-charcoal", "price": 19.89}, {"name": "End Wall-Dark Brown", "search": "end wall-dark brown", "price": 19.89}, {"name": "End Wall-Ebony Textured", "search": "end wall-ebony textured", "price": 21.64}, {"name": "End Wall-Graphite Textured", "search": "end wall-graphite textured", "price": 21.64}, {"name": "End Wall-Sepia Brown Textured", "search": "end wall-sepia brown textured", "price": 21.64}, {"name": "26 End Wall-Black", "search": "26 end wall-black", "price": 25.26}, {"name": "26 End Wall-Charcoal", "search": "26 end wall-charcoal", "price": 25.26}, {"name": "26 End Wall-Dark Brown", "search": "26 end wall-dark brown", "price": 25.26}, {"name": "26 End Wall-Ebony Textured", "search": "26 end wall-ebony textured", "price": 27.48}, {"name": "26 End Wall-Graphite Textured", "search": "26 end wall-graphite textured", "price": 27.48}, {"name": "26 End Wall-Sepia Brown Textured", "search": "26 end wall-sepia brown textured", "price": 27.48}, {"name": "Standing Seam Black End Wall", "search": "standing seam black end wall", "price": 22.11}, {"name": "Standing Seam Charcoal End Wall", "search": "standing seam charcoal end wall", "price": 22.11}, {"name": "Standing Seam Dark Brown End Wall", "search": "standing seam dark brown end wall", "price": 22.11}, {"name": "Standing Seam Ebony End Wall", "search": "standing seam ebony end wall", "price": 24.12}, {"name": "Standing Seam Graphite grey End Wall", "search": "standing seam graphite grey end wall", "price": 24.12}, {"name": "Standing Seam Sepia Brown End Wall", "search": "standing seam sepia brown end wall", "price": 24.12}, {"name": "Side Wall-Black", "search": "side wall-black", "price": 20.37}, {"name": "Side Wall-Charcoal", "search": "side wall-charcoal", "price": 20.37}, {"name": "Side Wall-Dark Brown", "search": "side wall-dark brown", "price": 20.37}, {"name": "Side Wall-Ebony Textured", "search": "side wall-ebony textured", "price": 22.13}, {"name": "Side Wall-Graphite Textured", "search": "side wall-graphite textured", "price": 22.13}, {"name": "Side Wall-Sepia Brown Textured", "search": "side wall-sepia brown textured", "price": 22.13}, {"name": "26 Side Wall-Black", "search": "26 side wall-black", "price": 25.87}, {"name": "26 Side Wall-Charcoal", "search": "26 side wall-charcoal", "price": 25.87}, {"name": "26 Side Wall-Dark Brown", "search": "26 side wall-dark brown", "price": 25.87}, {"name": "26 Side Wall-Ebony Textured", "search": "26 side wall-ebony textured", "price": 28.09}, {"name": "26 Side Wall-Graphite Textured", "search": "26 side wall-graphite textured", "price": 28.09}, {"name": "26 Side Wall-Sepia Brown Textured", "search": "26 side wall-sepia brown textured", "price": 28.09}, {"name": "Standing Seam Black Side Wall", "search": "standing seam black side wall", "price": 22.11}, {"name": "Standing Seam Charcoal Side Wall", "search": "standing seam charcoal side wall", "price": 22.11}, {"name": "Standing Seam Dark Brown Side Wall", "search": "standing seam dark brown side wall", "price": 22.11}, {"name": "Standing Seam Ebony Side Wall", "search": "standing seam ebony side wall", "price": 24.12}, {"name": "Standing Seam Graphite grey Side Wall", "search": "standing seam graphite grey side wall", "price": 24.12}, {"name": "Standing Seam Sepia Brown Side Wall", "search": "standing seam sepia brown side wall", "price": 24.12}];
+
+// Mapping: calculator output category -> keywords to filter PRICING_PRODUCTS
+const TRANSFER_CATEGORIES = [
+  { key: 'panels',     label: '📐 Panels (sq ft)',      unit: 'sq ft', keywords: ['panel'] },
+  { key: 'ridge',      label: '🔝 Ridge Caps',           unit: 'pcs',   keywords: ['ridge cap'] },
+  { key: 'eave',       label: '⬇️ Eave Trims',           unit: 'pcs',   keywords: ['eave drip', 'extended eave', 'drip edge'] },
+  { key: 'valley',     label: '🔻 Valley Flashing',      unit: 'pcs',   keywords: ['valley'] },
+  { key: 'hip',        label: '🏔 Hip Caps',             unit: 'pcs',   keywords: ['hip cap'] },
+  { key: 'gable',      label: '📐 Gable Trim',           unit: 'pcs',   keywords: ['gable cap'] },
+  { key: 'endwall',    label: '🧱 End Wall Flashing',    unit: 'pcs',   keywords: ['end wall'] },
+  { key: 'sidewall',   label: '🧱 Side Wall Flashing',   unit: 'pcs',   keywords: ['side wall'] },
+];
+
+const COLOURS = ['Black','Charcoal','Dark Brown','Ebony','Graphite grey','Sepia Brown','Melchers Green'];
+
+let tmColour = 'Charcoal';
+let tmMappings = {}; // key -> product index in PRICING_PRODUCTS
+
+function getTransferTotals() {
+  // Read from the OPTIMIZED summary DOM values
+  const panels = parseInt(document.getElementById('opt-total-sq-ft')?.innerText) || 0;
+  const ridge = parseInt(document.getElementById('opt-ridge-caps')?.innerText) || 0;
+  const eave = parseInt(document.getElementById('opt-eave-trims')?.innerText) || 0;
+  const valley = parseInt(document.getElementById('opt-valley-flashing')?.innerText) || 0;
+  const hip = parseInt(document.getElementById('opt-hip-caps')?.innerText) || 0;
+  const gable = parseInt(document.getElementById('opt-gable-trim')?.innerText) || 0;
+  const endwall = parseInt(document.getElementById('opt-end-wall-flashing')?.innerText) || 0;
+  const sidewall = parseInt(document.getElementById('opt-side-wall-flashing')?.innerText) || 0;
+  return { panels, ridge, eave, valley, hip, gable, endwall, sidewall };
+}
+
+function filterProducts(keywords, colour) {
+  // Build colour terms to handle all naming variations in the product list
+  const c = colour.toLowerCase();
+  const colourTerms = [c];
+  if (c === 'graphite grey') colourTerms.push('graphite');
+  if (c === 'sepia brown') colourTerms.push('sepia');
+  if (c === 'melchers green') colourTerms.push('melchers');
+
+  return PRICING_PRODUCTS
+    .map((p, i) => ({p, i}))
+    .filter(({p}) => {
+      const s = p.search.toLowerCase();
+      const hasColour = colourTerms.some(term => s.includes(term));
+      const hasKeyword = keywords.some(k => s.includes(k.toLowerCase()));
+      return hasColour && hasKeyword;
+    });
+}
+
+function openTransferModal() {
+  const totals = getTransferTotals();
+  const hasAny = Object.values(totals).some(v => v > 0);
+  if (!hasAny) { alert('Please calculate a roof first — all totals are currently 0.'); return; }
+
+  tmMappings = {};
+  document.getElementById('transfer-modal').classList.remove('hidden');
+  buildColourButtons();
+  buildMappingRows(totals);
+}
+
+function closeTransferModal() {
+  document.getElementById('transfer-modal').classList.add('hidden');
+}
+
+function buildColourButtons() {
+  const container = document.getElementById('tm-colour-buttons');
+  container.innerHTML = COLOURS.map(c => `
+    <button onclick="selectColour('${c}')" id="cbtn-${c.replace(/ /g,'-')}"
+      class="px-3 py-1.5 rounded-full text-sm font-semibold border transition-all ${c === tmColour
+        ? 'bg-blue-700 text-white border-blue-700'
+        : 'bg-white text-slate-700 border-slate-300 hover:border-blue-400'}">${c}</button>
+  `).join('');
+}
+
+function selectColour(colour) {
+  tmColour = colour;
+  tmMappings = {}; // clear old mappings so dropdowns default to first option for new colour
+  buildColourButtons();
+  const totals = getTransferTotals();
+  buildMappingRows(totals);
+}
+
+function buildMappingRows(totals) {
+  const container = document.getElementById('tm-rows');
+  container.innerHTML = '';
+
+  TRANSFER_CATEGORIES.forEach(cat => {
+    const qty = totals[cat.key] || 0;
+    if (qty === 0) return;
+
+    const options = filterProducts(cat.keywords, tmColour);
+    if (options.length === 0) return;
+
+    // Try to find previously selected mapping
+    const prevSel = tmMappings[cat.key];
+    const defaultIdx = prevSel !== undefined ? prevSel : options[0].i;
+
+    const selectOptions = options.map(({p, i}) =>
+      `<option value="${i}" ${i === defaultIdx ? 'selected' : ''}>${p.name} — $${p.price.toFixed(2)}/pc</option>`
+    ).join('');
+
+    const row = document.createElement('div');
+    row.className = 'bg-slate-50 rounded-xl border border-slate-200 p-4';
+    row.innerHTML = `
+      <div class="flex justify-between items-center mb-2">
+        <span class="font-bold text-slate-800 text-sm">${cat.label}</span>
+        <span class="bg-blue-100 text-blue-800 text-xs font-black px-2 py-1 rounded-full">${qty} ${cat.unit}</span>
+      </div>
+      <select onchange="tmMappings['${cat.key}'] = parseInt(this.value)"
+        class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white text-slate-800 focus:border-blue-500 focus:outline-none">
+        <option value="">— Skip this item —</option>
+        ${selectOptions}
+      </select>
+    `;
+    // Store initial selection
+    tmMappings[cat.key] = defaultIdx;
+    container.appendChild(row);
+  });
+
+  if (container.children.length === 0) {
+    container.innerHTML = '<p class="text-slate-500 text-sm text-center py-8">No matching products found for this colour. Try a different colour above.</p>';
+  }
+}
+
+function executeTransfer() {
+  const totals = getTransferTotals();
+  const transferItems = [];
+
+  TRANSFER_CATEGORIES.forEach(cat => {
+    const qty = totals[cat.key] || 0;
+    if (qty === 0) return;
+    const productIdx = tmMappings[cat.key];
+    if (productIdx === undefined || productIdx === null || productIdx === '') return;
+    const product = PRICING_PRODUCTS[productIdx];
+    if (!product) return;
+    transferItems.push({ name: product.name, price: product.price, qty: qty });
+  });
+
+  if (transferItems.length === 0) {
+    alert('No items selected to transfer. Please match at least one item to a product.');
+    return;
+  }
+
+  // Encode and open contractor pricing with pre-loaded items
+  const encoded = encodeURIComponent(JSON.stringify(transferItems));
+  // Try to open local contractor_pricing file or fall back to prompt
+  const pricingUrl = 'contractor-pricing.html?transfer=' + encoded;
+
+  // Store in sessionStorage as backup
+  sessionStorage.setItem('sms_transfer', JSON.stringify({
+    items: transferItems,
+    project: projectName || ''
+  }));
+
+  closeTransferModal();
+
+  // Open pricing calculator
+  const win = window.open(pricingUrl, '_blank');
+  if (!win) {
+    alert('Please allow popups to open the Contractor Pricing Calculator, or open it manually and the transferred items will load automatically.');
+  }
+}
+// ============ END TRANSFER TO PRICING ============
+
+// Check contractor access for Transfer button using saved auth from roof calculator
+(async function() {
+  try {
+    const savedAuth = JSON.parse(localStorage.getItem('smsCalcAuth') || '{}');
+    const email = savedAuth.email || '';
+    if (!email) return;
+    const CONTRACTORS_URL = 'https://raw.githubusercontent.com/tom-smsupply/summit-tools/main/contractors.json';
+    const res = await fetch(CONTRACTORS_URL + '?nocache=' + Date.now());
+    const data = await res.json();
+    const approved = (data.approved || []).map(e => e.toLowerCase());
+    const btn = document.getElementById('opt-transfer-btn');
+    if (btn) btn.style.display = approved.includes(email.toLowerCase()) ? '' : 'none';
+  } catch(e) {
+    console.warn('Contractor check failed:', e);
+  }
+})();
   </script>
-  <footer class="mt-8 mb-4 text-center text-emerald-700 text-xs">
+  <!-- ============ TRANSFER TO PRICING MODAL ============ -->
+<div id="transfer-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 modal-overlay">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <div class="p-5 bg-blue-700 text-white rounded-t-2xl flex justify-between items-center flex-shrink-0">
+      <div>
+        <h2 class="text-xl font-bold">Send to Contractor Pricing</h2>
+        <p class="text-blue-200 text-sm mt-1">Match each calculated item to a specific product &amp; colour, then transfer.</p>
+      </div>
+      <button onclick="closeTransferModal()" class="text-white text-3xl leading-none px-2">&times;</button>
+    </div>
+    <div class="p-4 bg-blue-50 border-b border-blue-100 flex-shrink-0">
+      <label class="block text-xs font-black uppercase text-blue-700 mb-2 tracking-widest">1. Select Colour</label>
+      <div id="tm-colour-buttons" class="flex flex-wrap gap-2"></div>
+    </div>
+    <div class="overflow-y-auto flex-1 p-5">
+      <label class="block text-xs font-black uppercase text-blue-700 mb-3 tracking-widest">2. Match Products</label>
+      <div id="tm-rows" class="space-y-3"></div>
+    </div>
+    <div class="p-4 bg-slate-50 border-t flex gap-3 justify-end flex-shrink-0 rounded-b-2xl">
+      <button onclick="closeTransferModal()" class="px-5 py-2 rounded-xl border border-slate-300 text-slate-600 font-semibold text-sm hover:bg-slate-100">Cancel</button>
+      <button onclick="executeTransfer()" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm shadow">Transfer to Pricing ➜</button>
+    </div>
+  </div>
+</div>
+<footer class="mt-8 mb-4 text-center text-emerald-700 text-xs">
   <p>&copy; 2025 Summit Metal Supply. All rights reserved.</p>
   <p class="mt-1">This calculator is proprietary software. Unauthorized copying, modification, or distribution is prohibited.</p>
 </footer>
