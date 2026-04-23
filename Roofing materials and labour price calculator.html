@@ -376,12 +376,12 @@
       </div>
       <div style="margin-top:12px">
         <div class="rates-field">
-          <label>Logo filename <span style="font-weight:400;text-transform:none;font-style:italic;color:#aaa">— place the image file in the same folder as this HTML on GitHub</span></label>
-          <input type="text" id="r-logo-file" placeholder="e.g. logo.png or apex-logo.jpg" maxlength="120" oninput="previewLogoFile()">
+          <label>Logo <span style="font-weight:400;text-transform:none;font-style:italic;color:#aaa">— upload your company logo to display on customer quotes</span></label>
+          <input type="file" id="logoFileInput" accept="image/*" onchange="previewLogoFile()" style="margin-bottom:10px;padding:8px;">
         </div>
         <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
           <div class="logo-preview" id="logoPreview"><div class="logo-placeholder">No logo</div></div>
-          <div style="font-size:11px;color:#aaa;line-height:1.7">Upload your image file to your GitHub repo<br>in the same folder as <code style="background:#eee;padding:1px 5px;border-radius:3px">index.html</code><br>then type the exact filename above.</div>
+          <div style="font-size:11px;color:#aaa;line-height:1.7">Upload a PNG, JPG, or SVG file.<br>Logo will be saved with your settings<br>and appear on all customer quotes.</div>
         </div>
       </div>
     </div>
@@ -622,7 +622,11 @@ if (checkAuth()) {
         if(d['payment-terms']) document.getElementById('r-payment-terms').value=d['payment-terms'];
         if(d['company-name']) document.getElementById('r-company-name').value=d['company-name'];
         if(d['company-tag']) document.getElementById('r-company-tag').value=d['company-tag'];
-        if(d['logo-file']){ document.getElementById('r-logo-file').value=d['logo-file']; previewLogoFile(); }
+        if(d['logo-data']){
+          window._logoDataUrl=d['logo-data'];
+          const preview=document.getElementById('logoPreview');
+          preview.innerHTML=`<img src="${d['logo-data']}" alt="Logo" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+        }
         setSync('Settings loaded ✓');
       } else { setSync('Using default rates'); }
     } catch(e){ setSync('Could not load saved settings'); }
@@ -634,7 +638,7 @@ if (checkAuth()) {
     settings['payment-terms']=document.getElementById('r-payment-terms').value.trim();
     settings['company-name']=document.getElementById('r-company-name').value.trim();
     settings['company-tag']=document.getElementById('r-company-tag').value.trim();
-    settings['logo-file']=document.getElementById('r-logo-file').value.trim();
+    settings['logo-data']=window._logoDataUrl || '';
     try {
       localStorage.setItem(LS_SETTINGS,JSON.stringify(settings));
       const msg=document.getElementById('saveMsg');
@@ -735,13 +739,24 @@ function parseCurrencyInput(id) {
     return {projectName:name,savedAt:new Date().toISOString(),...c,total:fmt(c.total)};
   };
   window.previewLogoFile=function(){
-    const filename=document.getElementById('r-logo-file').value.trim();
+    const fileInput=document.getElementById('logoFileInput');
     const preview=document.getElementById('logoPreview');
-    if(!filename){preview.innerHTML='<div class="logo-placeholder">No logo</div>';window._logoDataUrl='';return;}
-    const img=new Image();
-    img.onload=function(){preview.innerHTML=`<img src="${filename}" alt="Logo">`;window._logoDataUrl=filename;};
-    img.onerror=function(){preview.innerHTML='<div class="logo-placeholder" style="color:#c0392b">Not found</div>';window._logoDataUrl='';};
-    img.src=filename;
+    if(!fileInput.files.length){
+      preview.innerHTML='<div class="logo-placeholder">No logo</div>';
+      window._logoDataUrl='';
+      return;
+    }
+    const file=fileInput.files[0];
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const dataUrl=e.target.result;
+      window._logoDataUrl=dataUrl;
+      preview.innerHTML=`<img src="${dataUrl}" alt="Logo" style="max-width:100%; max-height:100%; object-fit:contain;">`;
+    };
+    reader.onerror=function(){
+      preview.innerHTML='<div class="logo-placeholder" style="color:#c0392b">Load failed</div>';
+    };
+    reader.readAsDataURL(file);
   };
   function getProjectName(){ return document.getElementById('projectName').value.trim(); }
   function saveEstimateToStorage(data){
@@ -791,8 +806,7 @@ function parseCurrencyInput(id) {
     const tag=document.getElementById('r-company-tag').value.trim();
     const terms=document.getElementById('r-payment-terms').value.trim();
     const today=new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
-    const logoFile=document.getElementById('r-logo-file').value.trim();
-    const logoHtml=logoFile?`<img class="q-logo" src="${logoFile}" alt="Logo">`:'<div style="font-size:11px;color:#ccc;font-family:sans-serif">No logo set</div>';
+    const logoHtml=window._logoDataUrl?`<img class="q-logo" src="${window._logoDataUrl}" alt="Logo">`:'<div style="font-size:11px;color:#ccc;font-family:sans-serif">No logo set</div>';
     const SLOPE_LABELS={low:'Low / flat (2–4/12)',std:'Standard (4–7/12)',steep:'Steep (7–9/12)',vsteep:'Very steep (9/12+)'};
     const scopeRows=[
       ['Customer / project',name],['Panel type',PROFILE_LABELS[c.profile]],['Square footage',c.sqft.toLocaleString()+' ft²'],
