@@ -233,7 +233,7 @@
       <div class="grid2" style="margin-top:14px">
         <div><label>Panel profile / type</label>
           <select id="profile" onchange="calc()">
-            <option value="corrugated">Corrugated / R-panel</option>
+            <option value="corrugated">Straight rib</option>
             <option value="standing" selected>Standing seam</option>
             <option value="shingle">Steel shingle / tile</option>
           </select>
@@ -280,9 +280,18 @@
       </div>
       <div class="grid2" style="margin-top:14px">
         <div><label>Chimneys / penetrations</label><input type="number" id="chimneys" value="0" min="0" max="10" oninput="calc()"></div>
-        <div><label>Existing roof removal</label>
+        <div><label>Strapping</label>
+          <select id="strapping" onchange="calc()">
+            <option value="none" selected>None</option>
+            <option value="single">Single</option>
+            <option value="double">Double</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2" style="margin-top:14px">
+        <div><label>Shingle removal and disposal</label>
           <select id="tearoff" onchange="calc()">
-            <option value="0" selected>No removal (new build)</option>
+            <option value="0" selected>None (new build)</option>
             <option value="1">Remove 1 layer</option>
             <option value="2">Remove 2 layers</option>
           </select>
@@ -390,23 +399,42 @@
       <table class="profile-table">
         <thead><tr><th>Panel type</th><th>Material cost ($/ft²)</th><th>Markup (%)</th><th>Labour ($/ft²)</th></tr></thead>
         <tbody>
-          <tr><td>Corrugated / R-panel</td><td><input type="number" id="r-mat-corrugated" step="0.25" value="3.50" oninput="calc()"></td><td><input type="number" id="r-markup-corrugated" step="1" value="20" min="0" max="200" oninput="calc()"></td><td><input type="number" id="r-labour-corrugated" step="0.25" value="3.50" oninput="calc()"></td></tr>
+          <tr><td>Straight rib</td><td><input type="number" id="r-mat-corrugated" step="0.25" value="3.50" oninput="calc()"></td><td><input type="number" id="r-markup-corrugated" step="1" value="20" min="0" max="200" oninput="calc()"></td><td><input type="number" id="r-labour-corrugated" step="0.25" value="3.50" oninput="calc()"></td></tr>
           <tr><td>Standing seam</td><td><input type="number" id="r-mat-standing" step="0.25" value="6.00" oninput="calc()"></td><td><input type="number" id="r-markup-standing" step="1" value="20" min="0" max="200" oninput="calc()"></td><td><input type="number" id="r-labour-standing" step="0.25" value="7.00" oninput="calc()"></td></tr>
           <tr><td>Steel shingle / tile</td><td><input type="number" id="r-mat-shingle" step="0.25" value="5.00" oninput="calc()"></td><td><input type="number" id="r-markup-shingle" step="1" value="20" min="0" max="200" oninput="calc()"></td><td><input type="number" id="r-labour-shingle" step="0.25" value="5.00" oninput="calc()"></td></tr>
         </tbody>
       </table>
     </div>
     <div class="rates-block">
-      <div class="rates-block-title">Labour add-ons</div>
-      <div class="rates-grid3">
-        <div class="rates-field"><label>Valley / hip ($/lin ft)</label><input type="number" id="r-valley" step="1" value="18" oninput="calc()"></div>
-        <div class="rates-field"><label>Vent pipe flashing ($/each)</label><input type="number" id="r-vent" step="5" value="75" oninput="calc()"></div>
-        <div class="rates-field"><label>Skylight flash &amp; seal ($/each)</label><input type="number" id="r-sky" step="5" value="200" oninput="calc()"></div>
+      <div class="rates-block-title">Labour &amp; material add-ons — Standing Seam</div>
+      <div class="rates-grid4">
+        <div class="rates-field"><label>Valley / hip ($/lin ft)</label><input type="number" id="r-valley-standing" step="1" value="18" oninput="calc()"></div>
+        <div class="rates-field"><label>Vent pipe flashing ($/each)</label><input type="number" id="r-vent-standing" step="5" value="75" oninput="calc()"></div>
+        <div class="rates-field"><label>Skylight flash &amp; seal ($/each)</label><input type="number" id="r-sky-standing" step="5" value="300" oninput="calc()"></div>
+        <div class="rates-field"><label>Chimney / penetration ($/each)</label><input type="number" id="r-chimney-standing" step="5" value="300" oninput="calc()"></div>
       </div>
-      <div class="rates-grid3" style="margin-top:10px">
-        <div class="rates-field"><label>Chimney / penetration ($/each)</label><input type="number" id="r-chimney" step="5" value="200" oninput="calc()"></div>
-        <div class="rates-field"><label>Roof removal — 1 layer ($/ft²)</label><input type="number" id="r-t1" step="0.10" value="0.65" oninput="calc()"></div>
-        <div class="rates-field"><label>Roof removal — 2 layers ($/ft²)</label><input type="number" id="r-t2" step="0.10" value="1.15" oninput="calc()"></div>
+    </div>
+    <div class="rates-block">
+      <div class="rates-block-title">Labour &amp; material add-ons — Standard <span class="rates-block-subtitle">(Straight Rib &amp; Steel Shingle)</span></div>
+      <div class="rates-grid4">
+        <div class="rates-field"><label>Valley / hip ($/lin ft)</label><input type="number" id="r-valley-standard" step="1" value="12" oninput="calc()"></div>
+        <div class="rates-field"><label>Vent pipe flashing ($/each)</label><input type="number" id="r-vent-standard" step="5" value="75" oninput="calc()"></div>
+        <div class="rates-field"><label>Skylight flash &amp; seal ($/each)</label><input type="number" id="r-sky-standard" step="5" value="200" oninput="calc()"></div>
+        <div class="rates-field"><label>Chimney / penetration ($/each)</label><input type="number" id="r-chimney-standard" step="5" value="200" oninput="calc()"></div>
+      </div>
+    </div>
+    <div class="rates-block">
+      <div class="rates-block-title">Strapping <span class="rates-block-subtitle">— applies to all profiles</span></div>
+      <div class="rates-grid2">
+        <div class="rates-field"><label>Single strapping ($/ft²)</label><input type="number" id="r-strapping-single" step="0.25" value="1.25" oninput="calc()"></div>
+        <div class="rates-field"><label>Double strapping ($/ft²)</label><input type="number" id="r-strapping-double" step="0.25" value="2.50" oninput="calc()"></div>
+      </div>
+    </div>
+    <div class="rates-block">
+      <div class="rates-block-title">Shingle removal and disposal</div>
+      <div class="rates-grid2">
+        <div class="rates-field"><label>Shingle removal and disposal — 1 layer ($/ft²)</label><input type="number" id="r-t1" step="0.10" value="1.00" oninput="calc()"></div>
+        <div class="rates-field"><label>Shingle removal and disposal — 2 layers ($/ft²)</label><input type="number" id="r-t2" step="0.10" value="1.60" oninput="calc()"></div>
       </div>
     </div>
     <div class="rates-block">
@@ -414,16 +442,16 @@
       <div class="rates-grid4">
         <div class="rates-field"><label>Low / flat</label><input type="number" id="r-slope-low" step="0.25" value="0.00" oninput="calc()"></div>
         <div class="rates-field"><label>Standard</label><input type="number" id="r-slope-std" step="0.25" value="0.00" oninput="calc()"></div>
-        <div class="rates-field"><label>Steep</label><input type="number" id="r-slope-steep" step="0.25" value="0.75" oninput="calc()"></div>
-        <div class="rates-field"><label>Very steep</label><input type="number" id="r-slope-vsteep" step="0.25" value="1.75" oninput="calc()"></div>
+        <div class="rates-field"><label>Steep</label><input type="number" id="r-slope-steep" step="0.25" value="1.75" oninput="calc()"></div>
+        <div class="rates-field"><label>Very steep</label><input type="number" id="r-slope-vsteep" step="0.25" value="2.50" oninput="calc()"></div>
       </div>
     </div>
     <div class="rates-block">
       <div class="rates-block-title">Storey premiums <span class="rates-block-subtitle">— added to labour ($/ft²)</span></div>
       <div class="rates-grid3">
         <div class="rates-field"><label>1 storey (base)</label><input type="number" value="0.00" disabled style="opacity:0.4;cursor:not-allowed"></div>
-        <div class="rates-field"><label>2nd storey add</label><input type="number" id="r-s2" step="0.25" value="0.25" oninput="calc()"></div>
-        <div class="rates-field"><label>3rd storey add</label><input type="number" id="r-s3" step="0.25" value="0.50" oninput="calc()"></div>
+        <div class="rates-field"><label>2nd storey add</label><input type="number" id="r-s2" step="0.25" value="0.00" oninput="calc()"></div>
+        <div class="rates-field"><label>3rd storey add</label><input type="number" id="r-s3" step="0.25" value="1.00" oninput="calc()"></div>
       </div>
     </div>
     <div class="rates-block">
@@ -599,7 +627,9 @@ if (checkAuth()) {
     'r-mat-corrugated','r-markup-corrugated','r-labour-corrugated',
     'r-mat-standing','r-markup-standing','r-labour-standing',
     'r-mat-shingle','r-markup-shingle','r-labour-shingle',
-    'r-valley','r-vent','r-sky','r-chimney','r-t1','r-t2',
+    'r-valley-standing','r-vent-standing','r-sky-standing','r-chimney-standing',
+    'r-valley-standard','r-vent-standard','r-sky-standard','r-chimney-standard',
+    'r-strapping-single','r-strapping-double','r-t1','r-t2',
     'r-slope-low','r-slope-std','r-slope-steep','r-slope-vsteep',
     'r-s2','r-s3','r-km','r-km-min'
   ];
@@ -607,9 +637,11 @@ if (checkAuth()) {
     'r-mat-corrugated':3.50,'r-markup-corrugated':20,'r-labour-corrugated':3.50,
     'r-mat-standing':6.00,'r-markup-standing':20,'r-labour-standing':7.00,
     'r-mat-shingle':5.00,'r-markup-shingle':20,'r-labour-shingle':5.00,
-    'r-valley':18,'r-vent':75,'r-sky':200,'r-chimney':200,'r-t1':0.65,'r-t2':1.15,
-    'r-slope-low':0,'r-slope-std':0,'r-slope-steep':0.75,'r-slope-vsteep':1.75,
-    'r-s2':0.25,'r-s3':0.50,'r-km':1.50,'r-km-min':0
+    'r-valley-standing':18,'r-vent-standing':75,'r-sky-standing':300,'r-chimney-standing':300,
+    'r-valley-standard':12,'r-vent-standard':75,'r-sky-standard':200,'r-chimney-standard':200,
+    'r-strapping-single':1.25,'r-strapping-double':2.50,'r-t1':1.00,'r-t2':1.60,
+    'r-slope-low':0,'r-slope-std':0,'r-slope-steep':1.75,'r-slope-vsteep':2.5,
+    'r-s2':0,'r-s3':1,'r-km':1.50,'r-km-min':0
   };
   function setSync(msg){ const el=document.getElementById('syncStatus'); if(el) el.textContent=msg; }
   window._logoDataUrl='';
@@ -650,7 +682,7 @@ if (checkAuth()) {
   let isAdmin=false;
   window.currentSlope='low';
   const SLOPE_NOTES={low:'Low slope steel roofing requires a minimum 3/12 pitch — confirm panel manufacturer specs.',std:'',steep:'Steep slope requires safety equipment, staging, and increases labour time significantly.',vsteep:'Very steep slope: major labour premium, fall-arrest systems required, extended project timeline.'};
-  const PROFILE_LABELS={corrugated:'Corrugated / R-panel',standing:'Standing seam',shingle:'Steel shingle / tile'};
+  const PROFILE_LABELS={corrugated:'Straight rib',standing:'Standing seam',shingle:'Steel shingle / tile'};
   function rv(id){ return parseFloat(document.getElementById(id).value)||0; }
   function fmt(n){ return '$'+Math.round(n).toLocaleString('en-CA'); }
   window.setSlope=function(el,s){
@@ -694,6 +726,7 @@ function parseCurrencyInput(id) {
     const skylights=parseInt(document.getElementById('skylights').value)||0;
     const chimneys=parseInt(document.getElementById('chimneys').value)||0;
     const tearoff=parseInt(document.getElementById('tearoff').value)||0;
+    const strapping=document.getElementById('strapping').value;
     const matCostRaw=rv('r-mat-'+profile),markup=rv('r-markup-'+profile),labourBase=rv('r-labour-'+profile);
     const slopeAdj=rv('r-slope-'+window.currentSlope);
     const storeyAdj=storeys===2?rv('r-s2'):storeys===3?rv('r-s3'):0;
@@ -704,10 +737,15 @@ function parseCurrencyInput(id) {
     const matBase=usingActualCost?actualMatCostInput:sqft*matCostRaw;
     const matMarkupAmt=matBase*(markup/100);
     const labourCost=sqft*labourBase,slopeCost=sqft*slopeAdj,storeyCost=sqft*storeyAdj,tearoffCost=sqft*tearoffRate;
-    const ventCost=vents*rv('r-vent'),valleyCost=valleyFt*rv('r-valley'),skylightCost=skylights*rv('r-sky'),chimneyCost=chimneys*rv('r-chimney');
+    const addonSuffix=profile==='standing'?'-standing':'-standard';
+    const ventCost=vents*rv('r-vent'+addonSuffix),valleyCost=valleyFt*rv('r-valley'+addonSuffix),skylightCost=skylights*rv('r-sky'+addonSuffix),chimneyCost=chimneys*rv('r-chimney'+addonSuffix);
+    const strappingRate=strapping==='single'?rv('r-strapping-single'):strapping==='double'?rv('r-strapping-double'):0;
+    const strappingCost=sqft*strappingRate;
     const travelRaw=km*kmRate*days,travelCost=km>0?Math.max(travelRaw,kmMin):0;
-    const total=matBase+matMarkupAmt+labourCost+slopeCost+storeyCost+tearoffCost+ventCost+valleyCost+skylightCost+chimneyCost+travelCost;
-    return {sqft,storeys,profile,km,days,vents,valleyFt,skylights,chimneys,tearoff,matCostRaw,markup,labourBase,matBase,matMarkupAmt,labourCost,slopeCost,storeyCost,tearoffCost,ventCost,valleyCost,skylightCost,chimneyCost,travelRaw,travelCost,kmRate,kmMin,total,slopeAdj,storeyAdj,tearoffRate,usingActualCost,actualMatCostInput};
+    const subtotal=matBase+matMarkupAmt+labourCost+slopeCost+storeyCost+tearoffCost+ventCost+valleyCost+skylightCost+chimneyCost+strappingCost+travelCost;
+    const hst=subtotal*0.13;
+    const total=subtotal+hst;
+    return {sqft,storeys,profile,km,days,vents,valleyFt,skylights,chimneys,tearoff,strapping,matCostRaw,markup,labourBase,matBase,matMarkupAmt,labourCost,slopeCost,storeyCost,tearoffCost,ventCost,valleyCost,skylightCost,chimneyCost,strappingCost,strappingRate,travelRaw,travelCost,kmRate,kmMin,subtotal,hst,total,slopeAdj,storeyAdj,tearoffRate,usingActualCost,actualMatCostInput,addonSuffix};
   }
   window.calc=function(){
     const c=computeCosts();
@@ -719,13 +757,17 @@ function parseCurrencyInput(id) {
       ['Base labour — '+PROFILE_LABELS[c.profile]+' ('+c.sqft.toLocaleString()+' ft² × $'+c.labourBase.toFixed(2)+')',fmt(c.labourCost),'neutral'],
       c.slopeCost>0?['Slope premium ('+window.currentSlope+') +$'+c.slopeAdj.toFixed(2)+'/ft²','+'+fmt(c.slopeCost),'add']:null,
       c.storeyCost>0?['Storey premium ('+c.storeys+' storey) +$'+c.storeyAdj.toFixed(2)+'/ft²','+'+fmt(c.storeyCost),'add']:null,
-      c.tearoffCost>0?['Roof removal ('+c.tearoff+' layer'+(c.tearoff>1?'s':'')+') +$'+c.tearoffRate.toFixed(2)+'/ft²','+'+fmt(c.tearoffCost),'add']:null,
-      c.vents>0?['Vent pipe flashing ('+c.vents+' × $'+rv('r-vent')+')','+'+fmt(c.ventCost),'add']:null,
-      c.valleyFt>0?['Valley/hip flashing ('+c.valleyFt+' lin ft × $'+rv('r-valley')+')','+'+fmt(c.valleyCost),'add']:null,
-      c.skylights>0?['Skylight flashing ('+c.skylights+' × $'+rv('r-sky')+')','+'+fmt(c.skylightCost),'add']:null,
-      c.chimneys>0?['Chimney/penetration ('+c.chimneys+' × $'+rv('r-chimney')+')','+'+fmt(c.chimneyCost),'add']:null,
+      c.tearoffCost>0?['Shingle removal and disposal ('+c.tearoff+' layer'+(c.tearoff>1?'s':'')+') +$'+c.tearoffRate.toFixed(2)+'/ft²','+'+fmt(c.tearoffCost),'add']:null,
+      c.vents>0?['Vent pipe flashing ('+c.vents+' × $'+rv('r-vent'+c.addonSuffix)+')','+'+fmt(c.ventCost),'add']:null,
+      c.valleyFt>0?['Valley/hip flashing ('+c.valleyFt+' lin ft × $'+rv('r-valley'+c.addonSuffix)+')','+'+fmt(c.valleyCost),'add']:null,
+      c.skylights>0?['Skylight flashing ('+c.skylights+' × $'+rv('r-sky'+c.addonSuffix)+')','+'+fmt(c.skylightCost),'add']:null,
+      c.chimneys>0?['Chimney/penetration ('+c.chimneys+' × $'+rv('r-chimney'+c.addonSuffix)+')','+'+fmt(c.chimneyCost),'add']:null,
+      c.strappingCost>0?['Strapping ('+c.strapping+') ('+c.sqft.toLocaleString()+' ft² × $'+c.strappingRate.toFixed(2)+')','+'+fmt(c.strappingCost),'add']:null,
       c.travelCost>0?{header:'Travel'}:null,
       c.travelCost>0?['Travel ('+c.km+' km × $'+c.kmRate.toFixed(2)+'/km × '+c.days+' day'+(c.days>1?'s':'')+(c.travelRaw<c.kmMin?' — min applied':'')+')','+'+fmt(c.travelCost),'add']:null,
+      {header:'Tax'},
+      ['Subtotal',fmt(c.subtotal),'neutral'],
+      ['HST (13%)','+'+fmt(c.hst),'add'],
     ].filter(Boolean);
     document.getElementById('breakdown').innerHTML=rows.map(item=>{
       if(item.header) return `<div class="result-section-header">${item.header}</div>`;
@@ -813,8 +855,8 @@ function parseCurrencyInput(id) {
       c.storeys>1?['Storeys',c.storeys+' storeys']:null,['Roof slope',SLOPE_LABELS[window.currentSlope]||window.currentSlope],
       c.valleyFt>0?['Valleys / hips',c.valleyFt+' linear ft']:null,c.vents>0?['Vent pipe flashings',c.vents]:null,
       c.skylights>0?['Skylights',c.skylights]:null,c.chimneys>0?['Chimneys / penetrations',c.chimneys]:null,
-      c.tearoff>0?['Roof removal',c.tearoff+' layer'+(c.tearoff>1?'s':'')]:null,
-      c.km>0?['Travel',c.km+' km × '+c.days+' day'+(c.days>1?'s':'')]:null,
+      c.tearoff>0?['Shingle removal',c.tearoff+' layer'+(c.tearoff>1?'s':'')]:null,
+      c.strappingCost>0?['Strapping',c.strapping.charAt(0).toUpperCase()+c.strapping.slice(1)]:null,
     ].filter(Boolean);
     const deposit=Math.round(c.total*0.5);
     document.getElementById('quoteDoc').innerHTML=`
@@ -824,7 +866,14 @@ function parseCurrencyInput(id) {
       </div>
       <div class="q-badge">PROJECT ESTIMATE</div>
       <div class="q-scope">${scopeRows.map(([l,v])=>`<div class="q-scope-row"><span class="q-scope-label">${l}</span><span class="q-scope-val">${v}</span></div>`).join('')}</div>
-      <div class="q-price-box"><div><div class="q-price-label">Total project price</div><div class="q-price-note">Includes all materials, labour &amp; travel</div></div><div class="q-price-total">${fmt(c.total)}</div></div>
+      <div class="q-price-box">
+        <div>
+          <div class="q-price-label">Total project price</div>
+          <div style="font-size:11px;color:var(--gray-mid);margin-top:4px;">Subtotal: ${fmt(c.subtotal)}</div>
+          <div style="font-size:11px;color:var(--gray-mid);">HST (13%): ${fmt(c.hst)}</div>
+        </div>
+        <div class="q-price-total">${fmt(c.total)}</div>
+      </div>
       <div class="q-section-title">Payment terms</div>
       <div class="q-terms">${terms||'Payment terms not set.'}</div>
       <hr class="q-divider">
@@ -849,7 +898,7 @@ function parseCurrencyInput(id) {
     document.getElementById('km').value='0';document.getElementById('days').value='1';
     document.getElementById('vents').value='0';document.getElementById('valleys').value='0';
     document.getElementById('skylights').value='0';document.getElementById('chimneys').value='0';
-    document.getElementById('tearoff').value='0';
+    document.getElementById('tearoff').value='0';document.getElementById('strapping').value='none';
     const amc = document.getElementById('actualMatCost'); if(amc) { amc.value=''; }
     document.querySelectorAll('.slope-btn').forEach(b=>b.classList.remove('active'));
     document.querySelector('.slope-btn').classList.add('active');
