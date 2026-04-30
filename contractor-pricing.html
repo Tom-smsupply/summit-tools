@@ -222,9 +222,19 @@
     background: var(--border-accent);
   }
 
+  .search-filter-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
   .search-wrap {
     position: relative;
-    margin-bottom: 20px;
+    flex: 1;
+  }
+
+  .filter-wrap {
+    flex: 1;
   }
 
   .search-icon {
@@ -256,6 +266,25 @@
   }
 
   #searchInput::placeholder { color: var(--text-muted); }
+
+  #colorFilter {
+    width: 100%;
+    background: var(--steel-mid);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 16px;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+
+  #colorFilter:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-faint);
+  }
 
   .search-hint {
     font-size: 12px;
@@ -801,9 +830,16 @@
   <!-- LEFT: Search -->
   <div class="left-panel">
     <div class="section-label">Search Products</div>
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder='e.g. "standing seam ridge cap" or "tuff rib black"' autocomplete="off" />
+    <div class="search-filter-row">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder='e.g. "standing seam ridge cap" or "tuff rib black"' autocomplete="off" />
+      </div>
+      <div class="filter-wrap">
+        <select id="colorFilter">
+          <option value="">All Colors</option>
+        </select>
+      </div>
     </div>
     <div class="search-hint">
       💡 Type naturally — "standing seam" finds all <em>Stnd Seam</em> products. Tap an item to add it; tap again to remove it.
@@ -1050,6 +1086,20 @@ const quoteListDiv = document.getElementById('quoteList');
 const quoteEmptyDiv = document.getElementById('quoteEmpty');
 const totalAmountEl = document.getElementById('totalAmount');
 const totalItemsEl = document.getElementById('totalItems');
+const colorFilter = document.getElementById('colorFilter');
+
+// Populate color filter
+const colors = new Set();
+PRODUCTS.forEach(p => {
+  const match = p.name.match(/\b(Black|Charcoal|White|Ebony|Graphite|Sepia|Brown|Green)\b/i);
+  if (match) colors.add(match[1]);
+});
+[...colors].sort().forEach(color => {
+  const option = document.createElement('option');
+  option.value = color;
+  option.textContent = color;
+  colorFilter.appendChild(option);
+});
 
 searchInput.addEventListener('input', () => {
   clearTimeout(searchTimeout);
@@ -1059,6 +1109,8 @@ searchInput.addEventListener('input', () => {
 searchInput.addEventListener('keydown', e => {
   if (e.key === 'Escape') { searchInput.value = ''; doSearch(); }
 });
+
+colorFilter.addEventListener('change', doSearch);
 
 function normalize(s) {
   return s.toLowerCase()
@@ -1217,7 +1269,12 @@ function loadTransferredItems() {
   const normalizedQuery = normalize(raw);
   const tokens = normalizedQuery.split(' ').filter(t => t.length >= 1);
   const queryWords = raw.toLowerCase().split(' ').filter(w => w.length >= 1);
-  const matches = PRODUCTS.filter(p => scoreMatch(tokens, p.search));
+  const selectedColor = colorFilter.value;
+  
+  let matches = PRODUCTS.filter(p => scoreMatch(tokens, p.search));
+  if (selectedColor) {
+    matches = matches.filter(p => p.name.includes(selectedColor));
+  }
 
   resultsCount.textContent = matches.length + ' result' + (matches.length !== 1 ? 's' : '');
   resultsNote.textContent = matches.length > 50 ? '(Showing first 80 — refine your search)' : '';
