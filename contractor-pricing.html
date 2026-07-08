@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Summit Metal Supply — Contractor Pricing Calculator</title>
@@ -734,6 +733,7 @@
     .total-items { color: #555 !important; }
     .quote-footer { border-top: 2px solid #000 !important; padding-top: 12px !important; }
     .quote-header { display: none !important; }
+    #changeColorsBtn { display: none !important; }
   }
 
   .print-header { display: none; }
@@ -752,11 +752,32 @@
   .input-field { border: 1px solid #4b5563; border-radius: 0.5rem; padding: 0.5rem 0.75rem; width: 100%; transition: all 0.2s; background: #374151; color: #fff; }
   .input-field:focus { border-color: #d4a017; outline: 2px solid rgba(212,160,23,0.2); }
 
+  /* Color swap modal grid */
+  .color-option-btn {
+    padding: 12px 8px;
+    border-radius: var(--radius);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--steel);
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  .color-option-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-faint);
+    color: var(--accent-light);
+  }
+
 </style>
-</head>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.inset-0{inset:0px}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mt-2{margin-top:0.5rem}.flex{display:flex}.hidden{display:none}.h-16{height:4rem}.w-full{width:100%}.max-w-md{max-width:28rem}.items-center{align-items:center}.justify-center{justify-content:center}.overflow-hidden{overflow:hidden}.rounded-2xl{border-radius:1rem}.rounded-lg{border-radius:0.5rem}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pb-6{padding-bottom:1.5rem}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-5xl{font-size:3rem;line-height:1}.text-xs{font-size:0.75rem;line-height:1rem}.font-black{font-weight:900}.font-bold{font-weight:700}.tracking-widest{letter-spacing:0.1em}.text-blue-100{--tw-text-opacity:1;color:rgb(219 234 254 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216 / var(--tw-bg-opacity, 1))}.hover\:text-slate-700:hover{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}</style></head>
 <body>
 
-<div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900">
+<div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 hidden">
   <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
     <div class="p-6 bg-blue-600 text-white text-center">
       <img src="logo.png" alt="Summit Metal Supply" class="h-16 mx-auto mb-2">
@@ -804,7 +825,7 @@
 </div>
 
 
-<div id="tool-content" style="display:none;">
+<div id="tool-content" style="">
 
 <header>
   <div class="logo-area">
@@ -824,12 +845,12 @@
     <div class="search-filter-row">
       <div class="search-wrap">
         <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" placeholder='e.g. "standing seam ridge cap" or "tuff rib black"' autocomplete="off" />
+        <input type="text" id="searchInput" placeholder="e.g. &quot;standing seam ridge cap&quot; or &quot;tuff rib black&quot;" autocomplete="off">
       </div>
       <div class="filter-wrap">
         <select id="colorFilter">
           <option value="">All Colors</option>
-        </select>
+        <option value="Black">Black</option><option value="Brown">Brown</option><option value="Charcoal">Charcoal</option><option value="Ebony">Ebony</option><option value="Graphite">Graphite</option><option value="Green">Green</option><option value="Sepia">Sepia</option></select>
       </div>
     </div>
     <div class="search-hint">
@@ -839,7 +860,7 @@
       <span id="resultsCount" class="results-count"></span>
       <span id="resultsNote" style="font-size:12px;"></span>
     </div>
-    <div id="results"></div>
+    <div id="results"><div class="search-prompt"><span class="sp-icon">🏗</span><span>Start typing to search <strong>777 products</strong></span></div></div>
   </div>
 
   <div class="right-panel">
@@ -866,12 +887,12 @@
       <div class="section-label">Estimated Contractor Cost</div>
     </div>
 
-    <div id="quoteEmpty" class="quote-empty">
+    <div id="quoteEmpty" class="quote-empty" style="display: flex;">
       <div class="qe-icon">📋</div>
       <p>Search for products above and tap<br><strong>+</strong> to add them to your quote.</p>
     </div>
 
-    <div id="quoteList" style="display:none"></div>
+    <div id="quoteList" style="display: none;"></div>
 
     <div class="quote-footer">
       <div class="total-row" style="margin-bottom:10px;">
@@ -883,9 +904,7 @@
         <div style="display:flex;align-items:center;gap:6px;">
           <span class="shipping-print-val" style="display:none;font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:600;color:#000;" id="shippingPrintVal">$0.00</span>
           <span style="color:var(--text-muted);font-size:14px;">$</span>
-          <input type="number" id="shippingInput" min="0" step="0.01" value="0" placeholder="0.00"
-            style="width:90px;background:var(--steel-mid);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:14px;font-weight:600;padding:4px 8px;text-align:right;outline:none;"
-            oninput="updateTotals()" onfocus="if(this.value==='0')this.value='';" onblur="if(this.value==='')this.value='0';">
+          <input type="number" id="shippingInput" min="0" step="0.01" value="0" placeholder="0.00" style="width:90px;background:var(--steel-mid);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:14px;font-weight:600;padding:4px 8px;text-align:right;outline:none;" oninput="updateTotals()" onfocus="if(this.value==='0')this.value='';" onblur="if(this.value==='')this.value='0';">
         </div>
       </div>
       <div class="total-row" style="margin-bottom:10px;">
@@ -902,6 +921,7 @@
         <button class="btn btn-gold" onclick="triggerAction('print')">🖨 Print / Save PDF</button>
         <button class="btn btn-outline" onclick="triggerAction('save')" style="border-color:var(--accent);color:var(--accent);">💾 Save Project</button>
       </div>
+      <button id="changeColorsBtn" class="btn btn-outline" onclick="openColorModal()" style="width:100%;border-color:var(--accent);color:var(--accent);margin-bottom:10px;">🎨 Change Colors</button>
       <button class="btn btn-clear" onclick="clearQuote()">✕ Clear Quote</button>
     </div>
   </div>
@@ -912,10 +932,21 @@
     <h2>Project Details</h2>
     <p>Enter a project name for this quote. <strong>Save Project</strong> saves an editable HTML file. <strong>Print / Save PDF</strong> saves the HTML and opens the print dialog.</p>
     <label for="projectName">Project Name</label>
-    <input type="text" id="projectName" placeholder="e.g. Smith Residence - Roof 2025" maxlength="80" />
+    <input type="text" id="projectName" placeholder="e.g. Smith Residence - Roof 2025" maxlength="80">
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-gold" id="confirmBtn" onclick="confirmAction()">Continue</button>
+      <button class="btn btn-gold" id="confirmBtn" onclick="confirmAction()">💾 Save Project</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="colorModalOverlay">
+  <div class="modal">
+    <h2>Change Item Colors</h2>
+    <p>Pick a color to apply to every item currently in your quote. Any item that doesn't come in the selected color will be left as-is.</p>
+    <div id="colorOptionsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeColorModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -1947,7 +1978,7 @@ function doSearch() {
   
   let matches = PRODUCTS.filter(p => scoreMatch(tokens, p.search));
   if (selectedColor) {
-    matches = matches.filter(p => p.name.includes(selectedColor));
+    matches = matches.filter(p => p.name.includes(selectedColor) || !findColorToken(p.name));
   }
 
   resultsCount.textContent = matches.length + ' result' + (matches.length !== 1 ? 's' : '');
@@ -2101,7 +2132,137 @@ function clearQuote() {
     quote = [];
     renderQuote();
     doSearch();
+    const pn = document.getElementById('projectName');
+    if (pn) pn.value = '';
+    const si = document.getElementById('shippingInput');
+    if (si) si.value = '0';
+    updateTotals();
   }
+}
+
+// ============================================
+// COLOR SWAP FEATURE
+// Lets the contractor change the color of every
+// item already in the quote in one click, in case
+// the customer hasn't decided yet / changes their mind.
+// ============================================
+
+// Ordered longest-phrase-first so e.g. "Ebony Textured" is
+// matched before the shorter "Ebony" that it contains.
+const COLOR_TOKENS = [
+  "Sepia Brown Textured",
+  "Graphite Textured",
+  "Ebony Textured",
+  "Dark Brown",
+  "Graphite grey",
+  "Sepia Brown",
+  "Melchers Green",
+  "Charcoal",
+  "Ebony",
+  "Graphite",
+  "Black",
+  "Woodgrain"
+];
+
+// User-facing color categories. Each lists the underlying
+// token(s) that count as "that color" in the product data,
+// since different product families spell colors differently
+// (e.g. plain "Ebony" for panels vs "Ebony Textured" for trims).
+const COLOR_CATEGORIES = [
+  { label: "Black", tokens: ["Black"] },
+  { label: "Charcoal", tokens: ["Charcoal"] },
+  { label: "Dark Brown", tokens: ["Dark Brown"] },
+  { label: "Ebony", tokens: ["Ebony Textured", "Ebony"] },
+  { label: "Graphite", tokens: ["Graphite Textured", "Graphite grey", "Graphite"] },
+  { label: "Sepia Brown", tokens: ["Sepia Brown Textured", "Sepia Brown"] },
+  { label: "Melchers Green", tokens: ["Melchers Green"] },
+  { label: "Woodgrain", tokens: ["Woodgrain"] }
+];
+
+function findColorToken(name) {
+  for (const token of COLOR_TOKENS) {
+    const re = new RegExp('(^|[\\s\\-])(' + escapeRegex(token) + ')([\\s\\-]|$)', 'i');
+    const m = name.match(re);
+    if (m) return m[2];
+  }
+  return null;
+}
+
+function buildTemplate(name, token) {
+  const idx = name.toLowerCase().indexOf(token.toLowerCase());
+  if (idx === -1) return null;
+  return { pre: name.slice(0, idx), post: name.slice(idx + token.length) };
+}
+
+function findProductByName(name) {
+  const target = name.trim().toLowerCase();
+  for (let i = 0; i < PRODUCTS.length; i++) {
+    if (PRODUCTS[i].name.trim().toLowerCase() === target) return i;
+  }
+  return -1;
+}
+
+function openColorModal() {
+  if (quote.length === 0) {
+    alert('Please add some items to your quote first.');
+    return;
+  }
+  const grid = document.getElementById('colorOptionsGrid');
+  grid.innerHTML = COLOR_CATEGORIES.map(cat =>
+    `<button class="color-option-btn" onclick="applyColorChange('${cat.label.replace(/'/g, "\\'")}')">${cat.label}</button>`
+  ).join('');
+  document.getElementById('colorModalOverlay').classList.add('active');
+}
+
+function closeColorModal() {
+  document.getElementById('colorModalOverlay').classList.remove('active');
+}
+
+function applyColorChange(categoryLabel) {
+  const category = COLOR_CATEGORIES.find(c => c.label === categoryLabel);
+  if (!category) return;
+
+  let changed = 0, skipped = 0;
+
+  quote.forEach(item => {
+    const currentToken = findColorToken(item.name);
+    if (!currentToken) { skipped++; return; }
+    const tmpl = buildTemplate(item.name, currentToken);
+    if (!tmpl) { skipped++; return; }
+
+    let matchedIdx = -1;
+    for (const candidateToken of category.tokens) {
+      const candidateName = tmpl.pre + candidateToken + tmpl.post;
+      const idx = findProductByName(candidateName);
+      if (idx !== -1) { matchedIdx = idx; break; }
+    }
+
+    if (matchedIdx === -1) { skipped++; return; }
+
+    const p = PRODUCTS[matchedIdx];
+    item.id = matchedIdx;
+    item.name = p.name;
+    item.price = p.price;
+    changed++;
+  });
+
+  // Merge any items that ended up pointing at the same product
+  const merged = [];
+  quote.forEach(item => {
+    const existing = merged.find(m => m.id === item.id);
+    if (existing) { existing.qty += item.qty; }
+    else merged.push(item);
+  });
+  quote.length = 0;
+  quote.push(...merged);
+
+  closeColorModal();
+  renderQuote();
+  doSearch();
+
+  let msg = `Updated ${changed} item${changed !== 1 ? 's' : ''} to ${categoryLabel}.`;
+  if (skipped > 0) msg += ` ${skipped} item${skipped !== 1 ? 's' : ''} had no matching ${categoryLabel} option and were left unchanged.`;
+  alert(msg);
 }
 
 function saveQuoteAsHTML(projName) {
@@ -2244,5 +2405,6 @@ if (window.__SAVED_QUOTE__) {
     });
   }
 </script>
-</body>
-</html>
+
+
+</body></html>
