@@ -202,6 +202,7 @@
               <ul class="list-circle pl-5 mt-1">
                 <li>Right / Left Angle: One side square, one side angled.</li>
                 <li>Both / Centered: A standard centered gable.</li>
+                <li>Parallelogram (Offset): Ridge shifted left/right relative to the eave by a fixed offset, so both angled sides run in the same direction.</li>
               </ul>
             </li>
           </ul>
@@ -212,6 +213,7 @@
             <li><strong>Length:</strong> You can input this directly, OR calculate it from the run using the slope.</li>
             <li><strong>Slope:</strong> Vertical rise over 12" run (e.g., 6/12 for a 6:12 pitch).</li>
             <li><strong>Fold / Overhang:</strong> Fold for Standing Seam; Overhang for Tuff/Diamond Rib.</li>
+            <li><strong>Offset:</strong> Only used with Parallelogram angle type. Distance the ridge is shifted left (negative) or right (positive) relative to the eave.</li>
           </ul>
           <h3 class="font-bold text-lg mt-6">Length Input Options</h3>
           <p>Choose one of two methods:</p>
@@ -549,6 +551,33 @@ function initializeCalculator() {
       window.deferredPrompt = e;
     });
 
+function offsetHeightAt(x, e, offL, offR, h) {
+  // Roof quadrilateral: eave from (0,0)-(e,0), ridge from (offL,h)-(e+offR,h).
+  // offL = ridge-left position relative to eave-left; offR = ridge-right position relative to eave-right.
+  // Returns the panel's slope-length ("height") at horizontal position x.
+  const eaveL = 0, eaveR = e, ridgeL = offL, ridgeR = e + offR;
+  const inEave = x >= Math.min(eaveL, eaveR) - 0.001 && x <= Math.max(eaveL, eaveR) + 0.001;
+  const inRidge = x >= Math.min(ridgeL, ridgeR) - 0.001 && x <= Math.max(ridgeL, ridgeR) + 0.001;
+  if (inEave && inRidge) return h;
+  // Left ramp: spans the two "left" endpoints; height is 0 at the outer (min) point
+  // and rises to h at the inner (max) point where the full-height zone begins.
+  if (ridgeL !== eaveL) {
+    const a = Math.min(eaveL, ridgeL), b = Math.max(eaveL, ridgeL);
+    if (x >= a - 0.001 && x <= b + 0.001) {
+      return Math.max(0, Math.min(h, h * (x - a) / (b - a)));
+    }
+  }
+  // Right ramp: spans the two "right" endpoints; height is h at the inner (min) point
+  // where the full-height zone ends, and falls to 0 at the outer (max) point.
+  if (ridgeR !== eaveR) {
+    const a = Math.min(eaveR, ridgeR), b = Math.max(eaveR, ridgeR);
+    if (x >= a - 0.001 && x <= b + 0.001) {
+      return Math.max(0, Math.min(h, h * (b - x) / (b - a)));
+    }
+  }
+  return 0;
+}
+
 function calculate(s) {
   const cov = parseFloat(s.coverage)||0, r = parseFloat(s.ridge)||0, e = parseFloat(s.eave)||0, h = parseFloat(s.height)||0, fold = parseFloat(s.eaveFold)||0;
   if (cov <= 0 || (r <= 0 && e <= 0)) return null;
@@ -558,7 +587,16 @@ function calculate(s) {
     return calculateShingles(s);
   }
   
-  const maxW = Math.max(r, e), totalP = Math.ceil(maxW / cov), data = [];
+  const offL = parseFloat(s.offsetLeft)||0, offR = parseFloat(s.offsetRight)||0;
+  let maxW, minX = 0;
+  if (s.config === 'offset') {
+    const eaveL = 0, eaveR = e, ridgeL = offL, ridgeR = e + offR;
+    minX = Math.min(eaveL, ridgeL);
+    maxW = Math.max(eaveR, ridgeR) - minX;
+  } else {
+    maxW = Math.max(r, e);
+  }
+  const totalP = Math.ceil(maxW / cov), data = [];
   const hDiff = Math.abs(r - e), slope = hDiff > 0 ? h / hDiff : 0;
   
   const minRE = Math.min(r, e);
@@ -581,6 +619,7 @@ function calculate(s) {
     let startX, endX;
     if (s.config === 'left') { startX = maxW - ((i + 1) * cov); endX = maxW - (i * cov); }
     else if (s.config === 'both') { startX = (maxW / 2) - ((totalP / 2 - i) * cov); endX = startX + cov; }
+    else if (s.config === 'offset') { startX = minX + (i * cov); endX = minX + ((i + 1) * cov); }
     else { startX = i * cov; endX = (i + 1) * cov; }
 
     let base;
@@ -597,6 +636,10 @@ function calculate(s) {
       base = Math.max(0, base);
     } else if (s.config === 'left') {
       base = endX < (maxW - Math.min(r,e)) ? h - ((maxW - Math.min(r,e) - endX) * slope) : h;
+    } else if (s.config === 'offset') {
+      const hStart = offsetHeightAt(startX, e, offL, offR, h);
+      const hEnd = offsetHeightAt(endX, e, offL, offR, h);
+      base = Math.max(hStart, hEnd);
     } else {
       base = startX < Math.min(r,e) ? h : h - ((startX - Math.min(r,e)) * slope);
     }
@@ -657,7 +700,7 @@ function calculate(s) {
       data.push({ len: Math.ceil(Math.max(0, base + fold)), type: 'standard', xPos: startX });
     }
   }
-  return { panelData: data, maxW, coverage: cov };
+  return { panelData: data, maxW, coverage: cov, minX };
 }
   function calculateShingles(s) {
   const r = parseFloat(s.ridge)||0, e = parseFloat(s.eave)||0, h = parseFloat(s.height)||0;
@@ -871,7 +914,27 @@ function calculate(s) {
       // Trim calculations (same for all profiles)
       tEave += e;
       if (s.topAgainstWall) tEndWall += r; else tRidge += r;
-      if (Math.abs(r-e) > 0.1 && h > 0) {
+
+      if (s.config === 'offset' && h > 0) {
+        const offL = parseFloat(s.offsetLeft)||0, offR = parseFloat(s.offsetRight)||0;
+        const runL = Math.abs(offL), runR = Math.abs(offR);
+        // Left edge
+        if (runL > 0.1) {
+          const hypL = Math.sqrt(runL*runL + h*h);
+          if (s.leftAgainstWall) tSideWall += hypL;
+          else { if (r > e) tVal += Math.ceil(hypL / 120) / 2; else tHip += Math.ceil(hypL / 120) / 2; }
+        } else {
+          if (s.leftAgainstWall) tSideWall += h; else tGable += h;
+        }
+        // Right edge
+        if (runR > 0.1) {
+          const hypR = Math.sqrt(runR*runR + h*h);
+          if (s.rightAgainstWall) tSideWall += hypR;
+          else { if (r > e) tVal += Math.ceil(hypR / 120) / 2; else tHip += Math.ceil(hypR / 120) / 2; }
+        } else {
+          if (s.rightAgainstWall) tSideWall += h; else tGable += h;
+        }
+      } else if (Math.abs(r-e) > 0.1 && h > 0) {
          const sideRun = s.config === 'both' ? Math.abs(r-e) / 2 : Math.abs(r-e);
          const hyp = Math.sqrt(Math.pow(sideRun, 2) + h*h);
          
@@ -889,10 +952,11 @@ function calculate(s) {
          }
       }
       
-      // Gable trim - only for right/left configs, not for 'both'
+      // Gable trim - only for right/left configs (offset handles its own edges above)
       if (h > 0) {
-        if (s.config === 'both') {
-          // 'both' config has no gables
+        if (s.config === 'both' || s.config === 'offset') {
+          // 'both': angled edges counted above. 'offset': each edge counted above
+          // (as hip/valley/side-wall if angled, or gable/side-wall if that edge is square).
         } else {
           // Square side (always present for right/left)
           const sqW = (s.config === 'right' && s.leftAgainstWall) || (s.config === 'left' && s.rightAgainstWall);
@@ -968,20 +1032,76 @@ function calculate(s) {
   document.getElementById('end-wall-tile').style.display = tEndWall > 0 ? '' : 'none';
   document.getElementById('side-wall-tile').style.display = tSideWall > 0 ? '' : 'none';
 }
+    function updateAngledEdgesDisplay(s) {
+      const el = document.getElementById(`angles-${s.id}`);
+      if (!el) return;
+      const r = parseFloat(s.ridge)||0, e = parseFloat(s.eave)||0, h = parseFloat(s.height)||0;
+      const offL = parseFloat(s.offsetLeft)||0, offR = parseFloat(s.offsetRight)||0;
+      let html = '';
+      if (h <= 0) { el.innerHTML = ''; return; }
+
+      if (s.config === 'offset') {
+        const tags = [];
+        if (Math.abs(offL) > 0.05) {
+          const lenL = Math.sqrt(offL*offL + h*h);
+          tags.push(`<span class="bg-amber-50 text-amber-800 text-xs font-bold px-2 py-1 rounded border border-amber-200">↙ Left angled edge: ${lenL.toFixed(1)}"</span>`);
+        }
+        if (Math.abs(offR) > 0.05) {
+          const lenR = Math.sqrt(offR*offR + h*h);
+          tags.push(`<span class="bg-amber-50 text-amber-800 text-xs font-bold px-2 py-1 rounded border border-amber-200">↘ Right angled edge: ${lenR.toFixed(1)}"</span>`);
+        }
+        if (tags.length) html = `<div class="flex flex-wrap gap-2">${tags.join('')}</div>`;
+      } else if (Math.abs(r - e) > 0.1) {
+        if (s.config === 'both') {
+          const run = Math.abs(r-e)/2;
+          const len = Math.sqrt(run*run + h*h);
+          html = `<div class="flex flex-wrap gap-2"><span class="bg-amber-50 text-amber-800 text-xs font-bold px-2 py-1 rounded border border-amber-200">Angled edges (each side): ${len.toFixed(1)}"</span></div>`;
+        } else {
+          const run = Math.abs(r-e);
+          const len = Math.sqrt(run*run + h*h);
+          const side = s.config === 'left' ? 'Left' : 'Right';
+          html = `<div class="flex flex-wrap gap-2"><span class="bg-amber-50 text-amber-800 text-xs font-bold px-2 py-1 rounded border border-amber-200">${side} angled edge: ${len.toFixed(1)}"</span></div>`;
+        }
+      }
+      el.innerHTML = html;
+    }
     function updateUI(id) {
   const s = sections.find(x => x.id === id), res = calculate(s), svg = document.getElementById(`svg-${id}`), list = document.getElementById(`list-${id}`);
   if (!res) return;
+
+  if (!(parseFloat(s.height) > 0)) {
+    svg.innerHTML = '';
+    list.innerHTML = `<div class="p-4 text-xs text-slate-400">Enter a slope Length (or a Run + Slope) to see the diagram.</div>`;
+    const anglesEl = document.getElementById(`angles-${id}`);
+    if (anglesEl) anglesEl.innerHTML = '';
+    updateSummary();
+    return;
+  }
   
   const w = 800, h = 300, m = 50;
   const rW = (parseFloat(s.ridge)||0), eW = (parseFloat(s.eave)||0), sH = parseFloat(s.height)||1;
-  const maxW = Math.max(rW, eW);
-  const scale = (w-2*m)/maxW, hScale = (h-2*m)/sH;
+  const offL = parseFloat(s.offsetLeft)||0, offR = parseFloat(s.offsetRight)||0;
+  let maxW, scale, rX, eX, minX = 0;
+
+  if (s.config === 'offset') {
+    const eaveL = 0, eaveR = eW, ridgeL = offL, ridgeR = eW + offR;
+    minX = Math.min(eaveL, ridgeL);
+    maxW = Math.max(eaveR, ridgeR) - minX;
+    scale = (w-2*m)/(maxW || 1);
+    eX = m + (eaveL - minX) * scale;
+    rX = m + (ridgeL - minX) * scale;
+  } else {
+    maxW = Math.max(rW, eW);
+    scale = (w-2*m)/(maxW || 1);
+    const rWscaledTmp = rW*scale, eWscaledTmp = eW*scale;
+    if (s.config === 'left') { rX = m + (w-2*m) - rWscaledTmp; eX = m + (w-2*m) - eWscaledTmp; }
+    else if (s.config === 'right') { rX = m; eX = m; }
+    else { rX = m + (w-2*m-rWscaledTmp)/2; eX = m + (w-2*m-eWscaledTmp)/2; }
+  }
+  const hScale = (h-2*m)/sH;
   const rWscaled = rW*scale, eWscaled = eW*scale;
-  
-  let rX, eX;
-  if (s.config === 'left') { rX = m + (w-2*m) - rWscaled; eX = m + (w-2*m) - eWscaled; }
-  else if (s.config === 'right') { rX = m; eX = m; }
-  else { rX = m + (w-2*m-rWscaled)/2; eX = m + (w-2*m-eWscaled)/2; }
+
+  updateAngledEdgesDisplay(s);
   
   // Handle shingle profile differently
   if (res.isShingle) {
@@ -1087,8 +1207,10 @@ svg.innerHTML = `
   // First pass: draw panel lines and collect panel data with positions
   let panelPositions = [];
   res.panelData.forEach((p) => {
-    let x = m + (p.xPos * scale);
+    let x;
     if (s.config === 'both') x = m + (w-2*m-res.maxW*scale)/2 + (p.xPos * scale);
+    else if (s.config === 'offset') x = m + (p.xPos - minX) * scale;
+    else x = m + (p.xPos * scale);
     pLines += `<line x1="${x}" y1="${m}" x2="${x}" y2="${h-m}" stroke="#cbd5e1" stroke-dasharray="4" />`;
     panelPositions.push({ ...p, x: x });
   });
@@ -1166,6 +1288,7 @@ svg.innerHTML = `
     enabledDormers.forEach(d => {
       let dX = m + (d.left * scale);
       if (s.config === 'both') dX = m + (w-2*m-res.maxW*scale)/2 + (d.left * scale);
+      else if (s.config === 'offset') dX = m + (d.left - minX) * scale;
       let dY = (h-m) - d.bottom*hScale, dW = d.width*scale;
       
       if (d.isShed) {
@@ -1227,7 +1350,12 @@ svg.innerHTML = `
   const s = sections.find(x => x.id === id);
   const run = parseFloat(s.run) || 0;
   const slope = parseFloat(s.slope) || 0;
-  if (run <= 0 || slope <= 0) { s.height = 0; updateUI(id); return; }
+  if (run <= 0 || slope <= 0) {
+    // Don't clobber an already-entered height just because Run is still blank
+    // (e.g. right after switching to "Calculate from Run" mode).
+    updateUI(id);
+    return;
+  }
   const slopeFactor = Math.sqrt(1 + (slope / 12) * (slope / 12));
   s.height = run * slopeFactor;
   
@@ -1259,6 +1387,8 @@ svg.innerHTML = `
         height: '', 
         slope: 6,
         run: '',
+        offsetLeft: 0,
+        offsetRight: 0,
         heightMode: 'direct',
         profile: lastProfile, 
         coverage: coverage, 
@@ -1298,7 +1428,43 @@ svg.innerHTML = `
         addSection();
       }
     }
-    function updateVal(id, f, val) { sections.find(x => x.id === id)[f] = val; updateUI(id); }
+    function updateVal(id, f, val) {
+      const s = sections.find(x => x.id === id);
+      s[f] = val;
+      if (f === 'eave' && s.config === 'offset') { updateOffsetGeometry(id); return; }
+      updateUI(id);
+    }
+    function updateOffset(id, side, val) {
+      const s = sections.find(x => x.id === id);
+      s[side] = parseFloat(val) || 0;
+      updateOffsetGeometry(id);
+    }
+    function updateOffsetGeometry(id) {
+      // In Parallelogram (Offset) mode, ridge length is derived from eave + the
+      // two offsets so the drawing, panel taper, and trim math stay consistent.
+      const s = sections.find(x => x.id === id);
+      const e = parseFloat(s.eave) || 0;
+      const offL = parseFloat(s.offsetLeft) || 0;
+      const offR = parseFloat(s.offsetRight) || 0;
+      s.ridge = Math.max(0, e + offR - offL);
+      const ridgeField = document.getElementById(`ridge-field-${id}`);
+      if (ridgeField) ridgeField.value = Math.round(s.ridge * 100) / 100;
+      updateUI(id);
+    }
+    function updateConfig(id, val) {
+      const s = sections.find(x => x.id === id);
+      s.config = val;
+      const offsetDiv = document.getElementById(`offset-input-${id}`);
+      if (offsetDiv) offsetDiv.style.display = (val === 'offset') ? '' : 'none';
+      const ridgeField = document.getElementById(`ridge-field-${id}`);
+      if (val === 'offset') {
+        if (ridgeField) ridgeField.disabled = true;
+        updateOffsetGeometry(id);
+      } else {
+        if (ridgeField) ridgeField.disabled = false;
+        updateUI(id);
+      }
+    }
     function updateProfile(id, val) {
   const s = sections.find(x => x.id === id);
   s.profile = val;
@@ -1409,7 +1575,7 @@ function saveDormerData() {
     </div>
     <div class="p-4">
       <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4 no-print">
-        <div><label class="text-[10px] font-black uppercase text-slate-400">Ridge (In)</label><input type="number" class="input-field" value="${s.ridge||''}" oninput="updateVal(${s.id}, 'ridge', parseFloat(this.value))"></div>
+        <div><label class="text-[10px] font-black uppercase text-slate-400">Ridge (In)${s.config==='offset'?' <span class="normal-case text-slate-400">(auto)</span>':''}</label><input type="number" id="ridge-field-${s.id}" class="input-field" value="${s.ridge||''}" ${s.config==='offset'?'disabled':''} oninput="updateVal(${s.id}, 'ridge', parseFloat(this.value))"></div>
         <div><label class="text-[10px] font-black uppercase text-slate-400">Eave (In)</label><input type="number" class="input-field" value="${s.eave||''}" oninput="updateVal(${s.id}, 'eave', parseFloat(this.value))"></div>
         <div id="length-input-${s.id}"><label class="text-[10px] font-black uppercase text-slate-400">Length (In)</label><input type="number" class="input-field" value="${s.height||''}" oninput="updateVal(${s.id}, 'height', parseFloat(this.value)); updateHeightMode(${s.id}, 'direct')" placeholder="Slope length"></div>
         <div id="slope-input-${s.id}"><label class="text-[10px] font-black uppercase text-slate-400">Slope</label><div class="flex items-center gap-1"><input type="number" class="input-field flex-1" value="${s.slope||6}" oninput="updateSlope(${s.id}, this.value)" placeholder="Rise" min="0" step="0.1"><span class="text-slate-400 font-bold text-sm">/12</span></div></div>
@@ -1417,15 +1583,22 @@ function saveDormerData() {
         <div><label class="text-[10px] font-black uppercase text-slate-400">Fold (In)</label><input type="number" class="input-field" value="${s.eaveFold||''}" oninput="updateVal(${s.id}, 'eaveFold', parseFloat(this.value))"></div>
       </div>
       <div class="grid grid-cols-2 md:grid-cols-6 gap-3 mb-4 no-print">
-        <div><label class="text-[10px] font-black uppercase text-slate-400">Angle</label><select class="input-field" onchange="updateVal(${s.id}, 'config', this.value)"><option value="right" ${s.config==='right'?'selected':''}>Right</option><option value="left" ${s.config==='left'?'selected':''}>Left</option><option value="both" ${s.config==='both'?'selected':''}>Both (Start in Centre)</option></select></div>
+        <div><label class="text-[10px] font-black uppercase text-slate-400">Angle</label><select class="input-field" onchange="updateConfig(${s.id}, this.value)"><option value="right" ${s.config==='right'?'selected':''}>Right</option><option value="left" ${s.config==='left'?'selected':''}>Left</option><option value="both" ${s.config==='both'?'selected':''}>Both (Start in Centre)</option><option value="offset" ${s.config==='offset'?'selected':''}>Parallelogram (Offset)</option></select></div>
         <div id="run-input-${s.id}" style="display:none;"><label class="text-[10px] font-black uppercase text-slate-400">Run (In)</label><input type="number" class="input-field" value="${s.run||''}" oninput="updateVal(${s.id}, 'run', parseFloat(this.value)); calculateHeightFromRun(${s.id})" placeholder="Horizontal distance"></div>
+        <div id="offset-input-${s.id}" class="col-span-2 md:col-span-2 grid grid-cols-2 gap-3" style="display:${s.config==='offset'?'':'none'};">
+          <div><label class="text-[10px] font-black uppercase text-slate-400">Offset Left (In)</label><input type="number" class="input-field" value="${s.offsetLeft||0}" oninput="updateOffset(${s.id}, 'offsetLeft', this.value)" placeholder="Ridge-left vs eave-left"></div>
+          <div><label class="text-[10px] font-black uppercase text-slate-400">Offset Right (In)</label><input type="number" class="input-field" value="${s.offsetRight||0}" oninput="updateOffset(${s.id}, 'offsetRight', this.value)" placeholder="Ridge-right vs eave-right"></div>
+        </div>
       </div>
       <div class="mb-4 p-3 bg-slate-50 rounded-lg border no-print">
         <label class="flex items-center gap-2 text-sm font-semibold text-slate-700 cursor-pointer"><input type="radio" name="height-mode-${s.id}" value="direct" onchange="switchHeightMode(${s.id}, 'direct')" ${s.heightMode!=='calculated'?'checked':''}> Use Direct Length Input (slope length)</label>
         <label class="flex items-center gap-2 text-sm font-semibold text-slate-700 cursor-pointer mt-2"><input type="radio" name="height-mode-${s.id}" value="calculated" onchange="switchHeightMode(${s.id}, 'calculated')" ${s.heightMode==='calculated'?'checked':''}> Calculate from Run (horizontal distance)</label>
       </div>
       <div class="grid lg:grid-cols-4 gap-4">
-        <div class="lg:col-span-3 bg-slate-50 rounded-xl border min-h-[300px] flex items-center justify-center p-2"><svg id="svg-${s.id}" viewBox="0 0 800 300" class="w-full h-auto"></svg></div>
+        <div class="lg:col-span-3 bg-slate-50 rounded-xl border min-h-[300px] flex flex-col items-center justify-center p-2">
+          <svg id="svg-${s.id}" viewBox="0 0 800 300" class="w-full h-auto"></svg>
+          <div id="angles-${s.id}" class="w-full mt-2"></div>
+        </div>
         <div id="list-${s.id}" class="border rounded-xl bg-white overflow-hidden"></div>
       </div>
     </div>`;
