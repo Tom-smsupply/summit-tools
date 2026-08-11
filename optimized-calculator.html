@@ -1057,19 +1057,21 @@ function offsetHeightAt(x, e, offL, offR, h) {
       if (s.config === 'offset' && h > 0) {
         const offL = parseFloat(s.offsetLeft)||0, offR = parseFloat(s.offsetRight)||0;
         const runL = Math.abs(offL), runR = Math.abs(offR);
-        // Left edge
+        // Left edge: positive offset (ridge-left shifted right, roof tapers inward) = hip.
+        // Negative offset (ridge-left shifted left, roof widens outward) = valley.
         if (runL > 0.1) {
           const hypL = Math.sqrt(runL*runL + h*h);
           if (s.leftAgainstWall) tSideWall += hypL;
-          else { if (r > e) tVal += Math.ceil(hypL / 120) / 2; else tHip += Math.ceil(hypL / 120) / 2; }
+          else { if (offL > 0) tHip += Math.ceil(hypL / 120) / 2; else tVal += Math.ceil(hypL / 120) / 2; }
         } else {
           if (s.leftAgainstWall) tSideWall += h; else tGable += h;
         }
-        // Right edge
+        // Right edge: positive offset (ridge-right shifted right, roof widens outward) = valley.
+        // Negative offset (ridge-right shifted left, roof tapers inward) = hip.
         if (runR > 0.1) {
           const hypR = Math.sqrt(runR*runR + h*h);
           if (s.rightAgainstWall) tSideWall += hypR;
-          else { if (r > e) tVal += Math.ceil(hypR / 120) / 2; else tHip += Math.ceil(hypR / 120) / 2; }
+          else { if (offR > 0) tVal += Math.ceil(hypR / 120) / 2; else tHip += Math.ceil(hypR / 120) / 2; }
         } else {
           if (s.rightAgainstWall) tSideWall += h; else tGable += h;
         }
